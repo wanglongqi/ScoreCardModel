@@ -144,7 +144,9 @@ ENV/
 
 # mkdocs documentation
 /site
+document/_build/
 
 # mypy
 .mypy_cache/
 typecheck/
+.vscode
