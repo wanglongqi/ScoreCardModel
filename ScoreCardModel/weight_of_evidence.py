@@ -152,4 +152,4 @@ class WeightOfEvidence:
             numpy.array: - 替换特征序列枚举值为woe对应数值后的序列
 
         """
-        return np.array([self.woe.get(i) for i in X])
+        return np.array([self.woe.get(str(i)) for i in X])
