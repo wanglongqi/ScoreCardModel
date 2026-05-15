@@ -1,71 +1,52 @@
-from sklearn import datasets
+import numpy as np
 import pandas as pd
-from ScoreCardModel.binning.discretization import Discretization
-from ScoreCardModel.weight_of_evidence import WeightOfEvidence
-from ScoreCardModel.models.logistic_regression_model import LogisticRegressionModel
-from ScoreCardModel.score_card import ScoreCardModel, ScoreCardWithKSModel
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from ScoreCardModel.score_card.wrapper import ScoreCardWrapper
+from ScoreCardModel.analytics.plotting import plot_ks, plot_roc, plot_bin_stats
+from ScoreCardModel.analytics.metrics import calculate_ks
 
+# 1. Load Data
+data = load_breast_cancer()
+X = pd.DataFrame(data.data, columns=data.feature_names)
+y = pd.Series(data.target) # 0 is malignant, 1 is benign
 
-class MyLR(LogisticRegressionModel):
-    def predict(self, x):
-        x = self.pre_trade(x)
-        return self._predict_proba(x)
+# Select a few features for clarity
+features = ['mean radius', 'mean texture', 'mean smoothness', 'mean concavity']
+X = X[features]
 
-    def pre_trade(self, x):
-        import numpy as np
-        result = []
-        for i, v in x.items():
-            t = self.ds[i].transform([v])[0]
-            r = self.woes[i].transform([t])[0]
-            result.append(r)
-        return np.array(result)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    def _pre_trade_batch_row(self, row, Y, bins):
-        d = Discretization(bins)
-        d_row = d.transform(row)
-        woe = WeightOfEvidence()
-        woe.fit(d_row, Y)
-        return d, woe, woe.transform(d_row)
+print("--- ScoreCard Modern Refactoring Demo ---")
 
-    def pre_trade_batch(self, X, Y):
-        self.ds = {}
-        self.woes = {}
-        self.table = {}
-        self.ds["sepal length (cm)"], self.woes["sepal length (cm)"], self.table["sepal length (cm)"] = self._pre_trade_batch_row(
-            X["sepal length (cm)"], Y, [0, 2, 5, 8])
-        self.ds['sepal width (cm)'], self.woes['sepal width (cm)'], self.table['sepal width (cm)'] = self._pre_trade_batch_row(
-            X['sepal width (cm)'], Y, [0, 2, 2.5, 3, 3.5, 5])
-        self.ds['petal length (cm)'], self.woes['petal length (cm)'], self.table['petal length (cm)'] = self._pre_trade_batch_row(
-            X['petal length (cm)'], Y, [0, 1, 2, 3, 4, 5, 7])
-        self.ds['petal width (cm)'], self.woes['petal width (cm)'], self.table['petal width (cm)'] = self._pre_trade_batch_row(
-            X['petal width (cm)'], Y, [0, 1, 2, 3])
-        return pd.DataFrame(self.table)
+# 2. Use the Analyst Facade (ScoreCardWrapper)
+sc = ScoreCardWrapper(binning_strategy='quantile', n_bins=5, base_points=600, pdo=20)
+sc.fit(X_train, y_train)
 
+# 3. Predictions and Scoring
+scores = sc.predict(X_test)
+print(f"\nSample Scores (Higher is better/Benign):\n{scores.head()}")
 
-iris = datasets.load_iris()
-y = iris.target
-z = (y == 0)
-l = pd.DataFrame(iris.data, columns=iris.feature_names)
-lr = MyLR()
-lr.train(l, z)
-print(lr.predict(l.loc[0].to_dict()))
-sc = ScoreCardModel(lr, round_=2)
-print(sc.predict(sc.pre_trade(l.loc[0].to_dict())))
+# 4. Export the Systematic Scorecard
+scorecard_df = sc.export_scorecard()
+print(f"\nScorecard Table (Snippet):\n{scorecard_df.head(10)}")
 
-scs = []
-for i in range(len(l)):
-    score = sc.predict(sc.pre_trade(l.loc[i].to_dict()))
-    scs.append(score)
+# 5. Professional Analytics & Visualizations
+print("\nGenerating Professional Review Reports...")
 
-print(ScoreCardWithKSModel.Threshold_to_score(scs, 0.5))
-print(ScoreCardWithKSModel.Score_to_threshold(scs, score=70))
-print(ScoreCardWithKSModel.Score_to_threshold(scs, y=z, score=100))
-print(ScoreCardWithKSModel.Get_ks(scs, y=z, threshold=0.4).ks)
-# ScoreCardWithKSModel.Drawks(scs, y=z)
-scsc = [l.loc[i].to_dict() for i in range(len(l))]
-scks = ScoreCardWithKSModel.From_scorecard(sc)
-print(scks.threshold_to_score(scsc, 0.5))
-print(scks.score_to_threshold(scsc, score=70))
-print(scks.score_to_threshold(scsc, y=z, score=100))
-print(scks.get_ks(scsc, y=z, threshold=0.4).ks)
-scks.drawks(scsc, y=z)
+# Performance Metrics
+y_prob = sc.pipeline.predict_proba(X_test)[:, 1]
+ks_stat = calculate_ks(y_test, y_prob)
+print(f"Model KS Statistic: {ks_stat:.3f}")
+
+# Plotting (Note: In a non-interactive shell these might not show, 
+# but they are ready for Notebooks/GUI)
+# plot_ks(y_test, y_prob)
+# plot_roc(y_test, y_prob)
+
+# Bin Analysis for one feature
+X_test_binned = sc.pipeline.named_steps['binning'].transform(X_test)
+X_test_binned['target'] = y_test
+# plot_bin_stats(X_test_binned, 'mean radius', 'target')
+
+print("\nRefactoring Complete. Use `sc.pipeline` for standard sklearn workflows.")
