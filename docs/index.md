@@ -9,7 +9,7 @@ ScoreCardModel is a professional toolset for scorecard modeling, fully compatibl
 
 ## User Guides
 
-- [WOE In-Depth Guide](user_guide/woe_in_depth.md) — WOE methods, diagnostics, IV interpretation
+- [WOE In-Depth Guide](woe_in_depth.md) — WOE methods, diagnostics, IV interpretation
 - [Best Practices](best_practices.md) — Credit risk scorecard development guidelines
 
 ## API Reference

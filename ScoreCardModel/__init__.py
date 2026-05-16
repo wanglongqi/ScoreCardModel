@@ -54,7 +54,7 @@ Modern API Usage:
    ```
 
 For detailed WOE method selection and diagnostic guidance, see:
-  `docs/user_guide/woe_in_depth.md`
+  `docs/woe_in_depth.md`
 """
 
 __version__ = "2.0.0"
