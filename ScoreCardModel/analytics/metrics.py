@@ -24,5 +24,10 @@ def calculate_psi(expected: np.ndarray, actual: np.ndarray, n_bins: int = 10) ->
     expected_per = np.where(expected_per == 0, 0.0001, expected_per)
     actual_per = np.where(actual_per == 0, 0.0001, actual_per)
 
-    psi = np.sum((actual_per - expected_per) * np.log(actual_per / expected_per))
-    return float(psi)
+    psi_val = np.sum((actual_per - expected_per) * np.log(actual_per / expected_per))
+    return float(psi_val)
+
+def calculate_accuracy_ratio(y_true: np.ndarray, y_prob: np.ndarray) -> float:
+    """Calculate the Accuracy Ratio (AR) = 2 * AUC - 1."""
+    auc = roc_auc_score(y_true, y_prob)
+    return float(2 * auc - 1)
