@@ -12,7 +12,7 @@
 
 ### Score Distribution: Good vs Bad
 
-![Score Distribution: Good vs Bad](example_report_plots/score_distribution.png)
+![Score Distribution: Good vs Bad](example_report_plots/score_distribution_good_vs_bad.png)
 
 ### KS Curve
 
@@ -24,13 +24,13 @@
 
 ### Cumulative Accuracy Profile (CAP)
 
-![Cumulative Accuracy Profile (CAP)](example_report_plots/cap_curve.png)
+![Cumulative Accuracy Profile (CAP)](example_report_plots/cumulative_accuracy_profile_cap.png)
 
 ## Feature Analysis
 
 ### Feature IV Ranking
 
-![Feature IV Ranking](example_report_plots/iv_summary.png)
+![Feature IV Ranking](example_report_plots/feature_iv_ranking.png)
 
 ## Scorecard
 
@@ -57,16 +57,15 @@
 | mean concavity  | (0.0879, 0.15]   | -1.32854   |    98.89 |
 | mean concavity  | (0.15, inf]      | -2.94982   |    66.87 |
 
-
 ### Scorecard Points Heatmap
 
-![Scorecard Points Heatmap](example_report_plots/scorecard_heatmap.png)
+![Scorecard Points Heatmap](example_report_plots/scorecard_points_heatmap.png)
 
 ## Calibration & Cutoff
 
 ### Calibration Curve
 
-![Calibration Curve](example_report_plots/calibration.png)
+![Calibration Curve](example_report_plots/calibration_curve.png)
 
 ### Cutoff Optimization
 
