@@ -82,8 +82,11 @@ print(ranking[['Feature', 'IV', 'IV_Label', 'Monotonicity', 'Recommendation']])
 
 ## Documentation
 
-- [WOE In-Depth Guide](docs/user_guide/woe_in_depth.md) — WOE methods, diagnostics, IV interpretation, and best practices
+See the [full documentation](docs/index.md) for API reference, guides, and examples.
+
+- [WOE In-Depth Guide](docs/user_guide/woe_in_depth.md) — WOE methods, diagnostics, IV interpretation
 - [Best Practices](docs/best_practices.md) — Credit risk scorecard development guidelines
+- [API Reference](docs/api.md) — Complete class and function reference
 
 ## License
 
