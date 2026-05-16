@@ -1,5 +1,0 @@
-
-include LICENSE
-include README.rst
-recursive-include requirements *.txt
-recursive-include ScoreCardModel *.pyx *.pxd *.pxi *.py *.c *.h
