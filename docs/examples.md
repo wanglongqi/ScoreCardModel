@@ -5,34 +5,36 @@
 Start by ranking all features by Information Value:
 
 ```python
-from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from ScoreCardModel.analytics.selection import rank_features
 
-data = load_breast_cancer()
-X = pd.DataFrame(data.data, columns=data.feature_names)
-y = pd.Series(data.target)
+data = fetch_openml('default-of-credit-card-clients', as_frame=True,
+                    parser='pandas', version=1)
+X = data.data
+y = (data.target == '0').astype(int)
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=42
 )
 
-ranking = rank_features(X_train, y_train)
+ranking = rank_features(X_train, y_train, n_bins=5)
 print(ranking)
 ```
 
-Output (30 features ranked by IV):
+Output (23 features ranked by IV):
 
 ```
-                    Feature       IV    IV_Label   Monotonicity  ... Chi2_pvalue Recommendation
-0           worst perimeter  17.0221  suspicious  non-monotonic  ...     0.0000    Investigate
-1              worst radius  16.7758  suspicious     decreasing  ...     0.0000    Investigate
+   Feature      IV    IV_Label   Monotonicity  ... Chi2_pvalue Recommendation
+0       x6  0.8816  suspicious     decreasing  ...     0.0000    Investigate
+1       x7  0.5704  suspicious     decreasing  ...     0.0000    Investigate
+2       x8  0.4354      strong  non-monotonic  ...     0.0000         Accept
+3       x9  0.3673      strong  non-monotonic  ...     0.0000         Accept
 ...
-24  worst fractal dimension   0.4379      strong  non-monotonic  ...     0.0000         Accept
-25   mean fractal dimension   0.2001      medium  non-monotonic  ...     0.0012         Accept
-26  fractal dimension error   0.1916      medium  non-monotonic  ...     0.0017         Accept
-27            texture error   0.1189      medium  non-monotonic  ...     0.0314         Accept
-28         smoothness error   0.0536        weak  non-monotonic  ...     0.2915         Accept
-29           symmetry error   0.0503        weak  non-monotonic  ...     0.3202         Accept
+12     x22  0.0694        weak     increasing  ...     0.0000         Accept
+13      x3  0.0193     useless  non-monotonic  ...     0.0000         Reject
+...
+21      x4  0.0057     useless  non-monotonic  ...     0.5000         Reject
+22      x2  0.0000     useless     single_bin  ...     1.0000         Reject
 ```
 
 The `Recommendation` column guides the decision:
@@ -62,11 +64,9 @@ print(final)
 Output:
 
 ```
-Candidates: 25 features
-After correlation filter: 10 features
-['worst fractal dimension', 'fractal dimension error', 'texture error',
- 'smoothness error', 'symmetry error', 'worst radius', 'worst texture',
- 'worst symmetry', 'worst smoothness', 'mean symmetry']
+Candidates: 13 features
+After correlation filter: 9 features
+['x8', 'x1', 'x18', 'x19', 'x20', 'x23', 'x21', 'x22', 'x6']
 ```
 
 ## End-to-End Pipeline
@@ -78,9 +78,9 @@ from ScoreCardModel import BinningTransformer, WOETransformer
 from ScoreCardModel.analytics.metrics import calculate_ks
 
 pipeline = Pipeline([
-    ('binning', BinningTransformer(strategy='quantile', n_bins=5)),
+    ('binning', BinningTransformer(n_bins=5)),
     ('woe', WOETransformer(method='empirical_logit')),
-    ('model', LogisticRegression()),
+    ('model', LogisticRegression(max_iter=1000)),
 ])
 pipeline.fit(X_train[final], y_train)
 
@@ -92,7 +92,7 @@ print(f'KS: {ks:.3f}')
 Output:
 
 ```
-KS: 0.947
+KS: 0.398
 ```
 
 Export scorecard table:
@@ -111,22 +111,22 @@ print(card.head(10))
 Output:
 
 ```
-              Variable               Bin       WOE   Points
-0  worst fractal dimension    (-inf, 0.0803]  0.760721   130.13
-1  worst fractal dimension  (0.0803, 0.0902]  0.317370   119.46
-2  worst fractal dimension  (0.0902, 0.1039] -0.140957   110.46
-3  worst fractal dimension   (0.1039, 0.118] -0.422805   104.22
-4  worst fractal dimension     (0.118, inf] -0.757640    96.75
-5  worst radius              (-inf, 11.454]  2.731686   183.52
-6  worst radius            (11.454, 12.744]  1.985193   167.34
-7  worst radius            (12.744, 14.042]  0.952830   145.79
-8  worst radius            (14.042, 17.072] -0.845640   109.31
-9  worst radius               (17.072, inf] -4.882953     8.13
+  Variable                   Bin       WOE  Points
+0       x8           (-1.0, 0.0]  0.304362   62.04
+1       x8          (-inf, -1.0]  0.353610   62.67
+2       x8            (0.0, inf] -1.393825   40.22
+3       x1       (-inf, 50000.0] -0.520152   51.85
+4       x1  (100000.0, 180000.0]  0.159326   60.05
+5       x1  (180000.0, 270000.0]  0.301749   61.77
+6       x1       (270000.0, inf]  0.589377   65.24
+7       x1   (50000.0, 100000.0] -0.165176   56.13
+8      x18         (-inf, 316.0] -0.638325   52.43
+9      x18      (1714.0, 3000.0]  0.042485   58.50
 ```
 
 ## Visualizations
 
-All plots are generated from a model trained on the breast cancer dataset with features selected via `rank_features()` + `select_by_correlation()` (10 features, quantile binning). The plots below are real output — not mockups.
+All plots are generated from a model trained on the Taiwan Credit dataset with 9 features selected via `rank_features()` + `select_by_correlation()`. The plots below are real output — not mockups.
 
 ### Model Discrimination
 
@@ -179,7 +179,7 @@ generate_report(pipeline, X_train, y_train, X_test, y_test,
 
 The report is a markdown file with embedded PNG plots and the full scorecard table — suitable for sharing with stakeholders or regulatory review.
 
-[View Breast Cancer Report](examples/breast_cancer_report.md)
+[View Taiwan Credit Report](examples/taiwan_credit_report.md)
 
 ## Dataset Examples
 
