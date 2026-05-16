@@ -78,6 +78,10 @@ def test_generate_report_markdown_content(trained_pipeline, tmp_path):
     generate_report(pipe, X, y, X, y, output_path=str(output))
     content = output.read_text()
     assert "# Scorecard Model Report" in content
-    assert "KS Statistic" in content
+    assert "Executive Summary" in content
+    assert "KS" in content
     assert "AUC" in content
     assert "Model Performance" in content
+    assert "Feature Analysis" in content
+    assert "Scorecard" in content
+    assert "Calibration" in content

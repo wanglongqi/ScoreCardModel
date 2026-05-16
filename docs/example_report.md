@@ -1,38 +1,66 @@
 # Scorecard Model Report
 
-## Summary Metrics
+## Executive Summary
 
-| Metric | Value |
-|--------|-------|
-| KS Statistic | 0.947 |
-| AUC | 0.995 |
-| Features | 10 |
+This report evaluates a credit scorecard model built on 10 features using Logistic Regression with WOE transformation. The model achieves a KS statistic of **94.7%** and an AUC of **0.995** (Accuracy Ratio = 0.990), indicating strong discriminatory power between good and bad accounts.
+
+**KS = 94.7%** — the maximum separation between cumulative good and bad distributions. A KS above 0.5 is generally considered very strong for credit scorecards.
+
+**AUC = 0.995** — the probability that the model ranks a randomly chosen good account higher than a randomly chosen bad account. An AUC of 0.5 is random; values above 0.9 are excellent.
 
 ## Model Performance
 
+The four plots below assess the model's ability to separate good from bad accounts across the entire score range.
+
 ### Score Distribution: Good vs Bad
+
+Overlaid density of scores for good (blue) vs bad (red) accounts. Good separation means the two distributions have minimal overlap.
 
 ![Score Distribution: Good vs Bad](example_report_plots/score_distribution_good_vs_bad.png)
 
 ### KS Curve
 
+Cumulative proportion of goods and bads as we move from high-risk to low-risk scores. The KS statistic is the maximum vertical distance between the two curves.
+
 ![KS Curve](example_report_plots/ks_curve.png)
 
 ### ROC Curve
+
+Trade-off between True Positive Rate (sensitivity) and False Positive Rate (1 - specificity). The diagonal line represents a random model.
 
 ![ROC Curve](example_report_plots/roc_curve.png)
 
 ### Cumulative Accuracy Profile (CAP)
 
+Cumulative goods captured as a function of the population fraction, ordered by risk score. The Accuracy Ratio (AR) measures how far the model is from random toward perfect.
+
 ![Cumulative Accuracy Profile (CAP)](example_report_plots/cumulative_accuracy_profile_cap.png)
 
 ## Feature Analysis
+
+Information Value (IV) measures each feature's predictive power. Industry-standard interpretation: <0.02 useless, 0.02–0.1 weak, 0.1–0.3 medium, 0.3–0.5 strong, >0.5 suspicious (investigate for data leakage).
+
+The model uses 10 features with a total IV of **9.86**. The chart below ranks features by individual IV contribution.
 
 ### Feature IV Ranking
 
 ![Feature IV Ranking](example_report_plots/feature_iv_ranking.png)
 
+### Top Features by IV
+
+| Feature          |      IV | Monotonicity   | Recommendation   |
+|:-----------------|--------:|:---------------|:-----------------|
+| worst radius     | 16.7758 | decreasing     | Investigate      |
+| worst texture    |  1.2886 | decreasing     | Investigate      |
+| worst symmetry   |  0.8829 | decreasing     | Investigate      |
+| worst smoothness |  0.8009 | decreasing     | Investigate      |
+| mean symmetry    |  0.6387 | decreasing     | Investigate      |
+
 ## Scorecard
+
+The scorecard translates model log-odds into interpretable point values. Each feature is binned, and each bin is assigned a WOE (Weight of Evidence) and a Points value. Higher points indicate lower risk (more "good"-like). The total score for an applicant is the sum of points across all features plus a base offset.
+
+The table below shows the full scorecard (50 rows across 10 features).
 
 | Variable                | Bin                |        WOE |   Points |
 |:------------------------|:-------------------|-----------:|---------:|
@@ -89,14 +117,22 @@
 
 ### Scorecard Points Heatmap
 
+The heatmap provides a bird's-eye view of the scorecard. Green cells = higher points (lower risk), red cells = lower points (higher risk). Consistent color gradients within each feature indicate good monotonicity.
+
 ![Scorecard Points Heatmap](example_report_plots/scorecard_points_heatmap.png)
 
 ## Calibration & Cutoff
 
+The base event rate in the test set is **63.2%**. The plots below assess probability calibration and help select an optimal decision threshold.
+
 ### Calibration Curve
+
+Compares predicted probabilities against observed event rates. A well-calibrated model follows the diagonal. Points above the line mean the model underestimates risk; below the line means it overestimates.
 
 ![Calibration Curve](example_report_plots/calibration_curve.png)
 
 ### Cutoff Optimization
+
+Shows how approval rate, bad rate, and relative profit change with the score cutoff. The optimal cutoff balances the cost of false positives (approving a bad account) against false negatives (rejecting a good account).
 
 ![Cutoff Optimization](example_report_plots/cutoff_optimization.png)
