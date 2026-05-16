@@ -68,7 +68,53 @@ def test_woe_iv_property(sample_woe_data):
     assert wt.iv == wt.iv_
 
 
-def test_woe_transform_unfitted_raises():
+def test_woe_method_standard():
+    X = pd.DataFrame({'bin': ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C']})
+    y = pd.Series([1, 1, 0, 1, 0, 0, 1, 1, 0])
+    wt = WOETransformer(method='standard').fit(X, y)
+    for vals in wt.woe_maps_.values():
+        assert not np.isinf(list(vals.values())).any()
+        assert not np.isnan(list(vals.values())).any()
+
+
+def test_woe_method_empirical_logit():
+    X = pd.DataFrame({'bin': ['A', 'A', 'B', 'B']})
+    y = pd.Series([1, 1, 0, 0])
+    wt = WOETransformer(method='empirical_logit').fit(X, y)
+    assert not np.isinf(list(wt.woe_maps_['bin'].values())).any()
+
+
+def test_woe_method_signed():
+    X = pd.DataFrame({'bin': ['A', 'A', 'B', 'B']})
+    y = pd.Series([1, 1, 0, 0])
+    wt = WOETransformer(method='signed').fit(X, y)
+    vals = list(wt.woe_maps_['bin'].values())
+    assert vals[0] > 0  # more goods -> positive
+    assert vals[1] < 0  # more bads -> negative
+    assert abs(vals[0]) == pytest.approx(abs(vals[1]), abs=1e-6)
+
+
+def test_woe_invalid_method_raises():
+    with pytest.raises(ValueError, match='method'):
+        WOETransformer(method='invalid')
+
+
+def test_woe_rare_lumping():
+    X = pd.DataFrame({'cat': ['A', 'A', 'A', 'A', 'A', 'B', 'C']})
+    y = pd.Series([1, 1, 1, 1, 1, 0, 0])
+    wt = WOETransformer(rare_lumping=True, min_bin_pct=0.2).fit(X, y)
+    assert 'RARE' in wt.woe_maps_['cat']  # 'B' and 'C' merged into RARE
+    assert len(wt.woe_maps_['cat']) == 2  # A + RARE
+
+
+def test_woe_methods_produce_different_results():
+    X = pd.DataFrame({'bin': ['A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C']})
+    y = pd.Series([1, 1, 0, 1, 0, 0, 1, 1, 0])
+    wt_std = WOETransformer(method='standard').fit(X, y)
+    wt_adj = WOETransformer(method='adjusted').fit(X, y)
+    for k in wt_std.woe_maps_['bin']:
+        assert not np.isinf(wt_std.woe_maps_['bin'][k])
+        assert wt_std.woe_maps_['bin'][k] == pytest.approx(wt_adj.woe_maps_['bin'][k], abs=1e-1)
     wt = WOETransformer()
     with pytest.raises(Exception):
         wt.transform(pd.DataFrame({'bin': ['A']}))
