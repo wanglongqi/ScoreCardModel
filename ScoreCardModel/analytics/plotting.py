@@ -16,21 +16,22 @@ def plot_ks(y_true: np.ndarray, y_prob: np.ndarray, title: str = "KS Curve") -> 
     ks_idx = np.argmax(tpr - fpr)
     ks_stat = tpr[ks_idx] - fpr[ks_idx]
 
+    x = np.linspace(0, 1, len(tpr))
+
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(tpr, label='Good (Cumulative)', color='blue', lw=2)
-    ax.plot(fpr, label='Bad (Cumulative)', color='red', lw=2)
+    ax.plot(x, tpr, label='Good (Cumulative)', color='blue', lw=2)
+    ax.plot(x, fpr, label='Bad (Cumulative)', color='red', lw=2)
     diff = tpr - fpr
-    ax.plot(diff, label='KS Difference', color='green', lw=2, linestyle='--')
-    ax.axvline(ks_idx / len(diff), color='black', linestyle=':', alpha=0.5)
-    ax.annotate(f'KS = {ks_stat:.3f}', xy=(ks_idx / len(diff), ks_stat),
+    ax.plot(x, diff, label='KS Difference', color='green', lw=2, linestyle='--')
+    ax.axvline(x[ks_idx], color='black', linestyle=':', alpha=0.5)
+    ax.annotate(f'KS = {ks_stat:.3f}', xy=(x[ks_idx], ks_stat),
                 fontsize=12, fontweight='bold',
-                xytext=(ks_idx / len(diff) + 0.05, ks_stat + 0.05),
+                xytext=(x[ks_idx] + 0.05, ks_stat + 0.05),
                 arrowprops={"arrowstyle": '->', "color": 'black'})
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_xlabel('Population Percentile')
-    ax.set_ylabel('Cumulative Percentage')
     ax.set_title(title)
     ax.legend(loc='lower right')
     ax.grid(True, alpha=0.3)
