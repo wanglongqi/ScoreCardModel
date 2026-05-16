@@ -363,10 +363,9 @@ def plot_scorecard_waterfall(contributions: dict[str, float],
             ax.bar(i, values[i], color='gray', alpha=0.7)
             values[i]
         else:
-            ax.bar(i, values[i], bottom=running[i - 1] - values[i],
+            ax.bar(i, values[i], bottom=running[i - 1],
                    color=colors_list[i], alpha=0.7)
-            connector = running[i - 1]
-            ax.plot([i - 1, i - 1], [connector, connector], 'k-', lw=0.5)
+            ax.plot([i - 1, i], [running[i - 1], running[i - 1]], 'k-', lw=0.5)
 
         ax.text(i, running[i] + abs(max(values)) * 0.02,
                 f'{values[i]:+.0f}', ha='center', fontsize=10, fontweight='bold')
