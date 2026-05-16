@@ -158,4 +158,4 @@ generate_report(pipeline, X_train, y_train, X_test, y_test,
 
 The report is a standalone, self-contained HTML file with all key plots, metrics, and the scorecard table — suitable for sharing with stakeholders or regulatory review.
 
-[View Example Report](example_report.html)
+[View Example Report](example_report.md)

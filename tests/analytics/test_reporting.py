@@ -1,3 +1,4 @@
+import os
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -32,17 +33,27 @@ def trained_pipeline():
 
 def test_generate_report_creates_file(trained_pipeline, tmp_path):
     pipe, X, y = trained_pipeline
-    output = tmp_path / "report.html"
+    output = tmp_path / "report.md"
     generate_report(pipe, X, y, X, y, output_path=str(output))
     assert output.exists()
-    assert output.stat().st_size > 500
+    assert output.stat().st_size > 200
 
 
 def test_generate_report_returns_path(trained_pipeline, tmp_path):
     pipe, X, y = trained_pipeline
-    output = tmp_path / "test_report.html"
+    output = tmp_path / "test_report.md"
     result = generate_report(pipe, X, y, X, y, output_path=str(output))
     assert result == str(output)
+
+
+def test_generate_report_creates_plots_dir(trained_pipeline, tmp_path):
+    pipe, X, y = trained_pipeline
+    output = tmp_path / "report.md"
+    generate_report(pipe, X, y, X, y, output_path=str(output))
+    plots_dir = tmp_path / "report_plots"
+    assert plots_dir.is_dir()
+    png_files = list(plots_dir.glob("*.png"))
+    assert len(png_files) > 0
 
 
 def test_generate_report_without_scorecard(tmp_path):
@@ -56,6 +67,17 @@ def test_generate_report_without_scorecard(tmp_path):
         ('model', LogisticRegression()),
     ])
     pipe.fit(X, y)
-    output = tmp_path / "simple_report.html"
+    output = tmp_path / "simple_report.md"
     generate_report(pipe, X, y, X, y, output_path=str(output))
     assert output.exists()
+
+
+def test_generate_report_markdown_content(trained_pipeline, tmp_path):
+    pipe, X, y = trained_pipeline
+    output = tmp_path / "report.md"
+    generate_report(pipe, X, y, X, y, output_path=str(output))
+    content = output.read_text()
+    assert "# Scorecard Model Report" in content
+    assert "KS Statistic" in content
+    assert "AUC" in content
+    assert "Model Performance" in content
