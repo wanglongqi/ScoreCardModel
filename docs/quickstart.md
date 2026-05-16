@@ -38,20 +38,46 @@ sc.fit(X_train, y_train)
 scores = sc.predict(X_test)
 ```
 
+## Feature Selection
+
+```python
+from ScoreCardModel.analytics.selection import rank_features, select_by_correlation
+
+ranking = rank_features(X_train, y_train)
+accept = ranking[ranking['Recommendation'] == 'Accept']['Feature'].tolist()
+final = select_by_correlation(X_train[accept], max_corr=0.7)
+pipeline.fit(X_train[final], y_train)
+```
+
 ## Automated Report
 
 ```python
 from ScoreCardModel.analytics.reporting import generate_report
 
 generate_report(pipeline, X_train, y_train, X_test, y_test,
-                output_path="scorecard_report.html")
+                output_path="scorecard_report.md")
 ```
 
-## Feature Analysis
+Generates a Markdown report with embedded PNG plots, scorecard table, and executive summary — ready for regulatory review.
+
+## Interactive What-If (Jupyter)
 
 ```python
-from ScoreCardModel.analytics.selection import rank_features
+# Requires: pip install scorecard-toolkit[interactive]
+from ScoreCardModel.interactive import ScorecardWidget
 
-ranking = rank_features(X_train, y_train)
-print(ranking[['Feature', 'IV', 'IV_Label', 'Monotonicity', 'Recommendation']])
+widget = ScorecardWidget(pipeline, X_train)
+widget.display()
+```
+
+Opens an interactive dashboard with sliders/dropdowns for each feature and a live waterfall chart that updates as you adjust values. See the [Interactive Notebook](examples/interactive_scorecard.ipynb) for a full walkthrough.
+
+## Scorecard Table in Jupyter
+
+```python
+from ScoreCardModel.score_card.transformers import ScoreCardTransformer
+
+lr, bt, wt = pipeline.named_steps['model'], pipeline.named_steps['binning'], pipeline.named_steps['woe']
+sct = ScoreCardTransformer(lr, bt, wt)
+sct  # renders as a styled HTML table in the notebook
 ```

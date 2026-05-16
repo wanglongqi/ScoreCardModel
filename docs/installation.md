@@ -27,6 +27,14 @@ uv pip install .
 pip install -e ".[dev,test]"
 ```
 
+## Optional Extras
+
+| Extra | Packages | Command |
+|---|---|---|
+| `interactive` | ipywidgets, ipython | `pip install scorecard-toolkit[interactive]` |
+| `test` | pytest, pytest-cov | `pip install scorecard-toolkit[test]` |
+| `dev` | ruff, mypy | `pip install scorecard-toolkit[dev]` |
+
 ## Dependencies
 
 - numpy, scipy, pandas, scikit-learn

@@ -44,7 +44,7 @@ from ScoreCardModel import ScoreCardTransformer
 ```
 
 | Parameter | Type | Default | Description |
-|---|---|---|---|
+|---|---|---|---|---|
 | `model` | Any | required | Fitted sklearn model |
 | `binning_transformer` | Any | required | Fitted BinningTransformer |
 | `woe_transformer` | Any | required | Fitted WOETransformer |
@@ -55,6 +55,7 @@ from ScoreCardModel import ScoreCardTransformer
 **Methods:**
 - `transform(x)` — Calculate scores
 - `export_scorecard()` — Export scorecard table
+- `_repr_html_()` — HTML table for Jupyter notebooks (no extra dependencies)
 
 ### ScoreCardWrapper
 
@@ -127,6 +128,21 @@ from ScoreCardModel.analytics.selection import (
 ```python
 from ScoreCardModel.analytics.reporting import generate_report
 ```
+
+Generates a Markdown report with embedded PNG plots, executive summary, and full scorecard table.
+
+### Interactive (Jupyter)
+
+```python
+# Requires: pip install scorecard-toolkit[interactive]
+from ScoreCardModel.interactive import ScorecardWidget
+from ScoreCardModel.interactive import scorecard_to_html
+```
+
+| Function / Class | Description |
+|---|---|
+| `ScorecardWidget` | Interactive what-if widget with sliders, live score, and waterfall chart |
+| `scorecard_to_html(card_df)` | Convert scorecard DataFrame to styled HTML table |
 
 ## Templates
 
