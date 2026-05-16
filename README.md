@@ -84,7 +84,7 @@ print(ranking[['Feature', 'IV', 'IV_Label', 'Monotonicity', 'Recommendation']])
 
 - [WOE In-Depth Guide](docs/user_guide/woe_in_depth.md) — WOE methods, diagnostics, IV interpretation, and best practices
 - [Best Practices](docs/best_practices.md) — Credit risk scorecard development guidelines
-- API Reference — Generated with Sphinx (see `document/`)
+- API Reference — Generated with Sphinx (see `docs/`)
 
 ## License
 
