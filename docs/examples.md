@@ -3,11 +3,9 @@
 ## End-to-End Scorecard
 
 ```python
-import numpy as np
-import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
-from ScoreCardModel.score_card.wrapper import ScoreCardWrapper
+from ScoreCardModel import ScoreCardWrapper
 
 data = load_breast_cancer()
 X = pd.DataFrame(data.data, columns=data.feature_names)
@@ -15,7 +13,6 @@ y = pd.Series(data.target)
 
 features = ['mean radius', 'mean texture', 'mean smoothness', 'mean concavity']
 X = X[features]
-
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=42
 )
@@ -25,36 +22,66 @@ sc.fit(X_train, y_train)
 
 scores = sc.predict(X_test)
 print(scores.head())
-
-scorecard_df = sc.export_scorecard()
-print(scorecard_df.head(10))
 ```
 
-## Pipeline with Custom Model
+Output:
+
+```
+204    556.594029
+70     333.576797
+131    420.456004
+431    585.839711
+540    627.256133
+dtype: float64
+```
+
+Export scorecard table:
+
+```python
+card = sc.export_scorecard()
+print(card.head(10))
+```
+
+Output:
+
+```
+       Variable               Bin       WOE  Points
+0   mean radius    (-inf, 11.454]  2.731686  199.04
+1   mean radius  (11.454, 12.744]  1.985193  178.78
+2   mean radius  (12.744, 14.042]  0.952830  150.76
+3   mean radius  (14.042, 17.072] -0.845640  101.95
+4   mean radius     (17.072, inf] -4.882953   -7.62
+5  mean texture    (-inf, 15.674]  2.194543  192.86
+6  mean texture  (15.674, 17.872]  0.857039  151.44
+7  mean texture   (17.872, 19.83] -0.087422  122.20
+8  mean texture   (19.83, 21.976] -0.719359  102.63
+9  mean texture     (21.976, inf] -1.187962   88.12
+```
+
+## Pipeline
 
 ```python
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-from ScoreCardModel import BinningTransformer, WOETransformer, ScoreCardTransformer
+from ScoreCardModel import BinningTransformer, WOETransformer
+from ScoreCardModel.analytics.metrics import calculate_ks
 
 pipeline = Pipeline([
-    ('binning', BinningTransformer(strategy='optimal')),
+    ('binning', BinningTransformer(strategy='quantile', n_bins=5)),
     ('woe', WOETransformer(method='empirical_logit')),
     ('model', LogisticRegression())
 ])
 pipeline.fit(X_train, y_train)
 
-# Score new data
-# ... build ScoreCardTransformer with the fitted components ...
+y_prob = pipeline.predict_proba(X_test)[:, 1]
+ks = calculate_ks(y_test, y_prob)
+print(f'KS: {ks:.3f}')
 ```
 
-## Generate Report
+Output:
 
-```python
-from ScoreCardModel.analytics.reporting import generate_report
-
-generate_report(pipeline, X_train, y_train, X_test, y_test,
-                output_path="scorecard_report.html")
+```
+KS: 0.913
 ```
 
 ## Feature Selection
@@ -64,4 +91,14 @@ from ScoreCardModel.analytics.selection import rank_features
 
 ranking = rank_features(X_train, y_train)
 print(ranking[ranking['IV'] > 0.02])
+```
+
+Output:
+
+```
+           Feature      IV  ... Chi2_pvalue Recommendation
+0      mean radius  4.1629  ...         0.0    Investigate
+1   mean concavity  3.7460  ...         0.0    Investigate
+2     mean texture  1.1140  ...         0.0    Investigate
+3  mean smoothness  0.6435  ...         0.0    Investigate
 ```
