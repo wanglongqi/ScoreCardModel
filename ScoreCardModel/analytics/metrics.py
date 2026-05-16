@@ -1,6 +1,6 @@
 import numpy as np
-import pandas as pd
 from sklearn.metrics import roc_auc_score, roc_curve
+
 
 def calculate_ks(y_true: np.ndarray, y_prob: np.ndarray) -> float:
     """Calculate the Kolmogorov-Smirnov statistic."""

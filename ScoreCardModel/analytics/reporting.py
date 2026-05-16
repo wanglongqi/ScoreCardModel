@@ -1,19 +1,24 @@
-from typing import Optional, Tuple
-import numpy as np
+import matplotlib
 import pandas as pd
 from sklearn.pipeline import Pipeline
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
 
-from ScoreCardModel.analytics.plotting import (
-    plot_ks, plot_roc, plot_cap, plot_score_distribution,
-    plot_calibration, plot_iv_summary_enhanced,
-    plot_scorecard_heatmap, plot_cutoff_optimization, plot_psi_drift,
-)
+matplotlib.use('Agg')
+import base64
+from io import BytesIO
+
+import matplotlib.pyplot as plt
+
 from ScoreCardModel.analytics.metrics import calculate_ks
+from ScoreCardModel.analytics.plotting import (
+    plot_calibration,
+    plot_cap,
+    plot_cutoff_optimization,
+    plot_iv_summary_enhanced,
+    plot_ks,
+    plot_roc,
+    plot_score_distribution,
+    plot_scorecard_heatmap,
+)
 
 
 def _fig_to_base64(fig: plt.Figure) -> str:

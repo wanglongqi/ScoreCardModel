@@ -2,62 +2,74 @@
 ScoreCardModel
 ==============
 
-A professional and modern toolset for scorecard modeling, fully compatible 
-with scikit-learn.
+A professional and modern toolset for scorecard modeling, fully compatible
+with scikit-learn. Designed for credit risk analysts and data scientists.
 
 Core Components:
 ----------------
 * binning: Discrete variable transformation (Quantile, Uniform, Optimal, Tree).
-* weight_of_evidence: Vectorized WOE and Information Value (IV) calculation.
-* score_card: Mapping of model probabilities to business-friendly scores.
-* analytics: Professional metrics (KS, AUC, PSI) and systematic review reports.
+* weight_of_evidence: 5 WOE methods, diagnostics, and IV calculation.
+* score_card: PDO/Base-Odds scaling and business-friendly score mapping.
+* analytics: Professional metrics, 16+ plot types, and automated HTML reports.
+* templates: Pre-built scorecard configurations for common scenarios.
 
 Modern API Usage:
 -----------------
-The library provides two ways to build scorecards:
 
-1. **Scikit-learn Pipeline (Recommended for Data Scientists):**
+1. **ScoreCardWrapper (Recommended for Analysts):**
+   ```python
+   from ScoreCardModel import ScoreCardWrapper
+
+   sc = ScoreCardWrapper(binning_strategy='quantile', base_points=600)
+   sc.fit(X_train, y_train)
+   scores = sc.predict(X_test)
+   card = sc.export_scorecard()
+   ```
+
+2. **Scikit-learn Pipeline (Recommended for Data Scientists):**
    ```python
    from sklearn.pipeline import Pipeline
    from sklearn.linear_model import LogisticRegression
-   from ScoreCardModel.binning.transformers import BinningTransformer
-   from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
-   
+   from ScoreCardModel import BinningTransformer, WOETransformer
+
    pipeline = Pipeline([
        ('binning', BinningTransformer(strategy='optimal')),
-       ('woe', WOETransformer()),
+       ('woe', WOETransformer(method='empirical_logit')),
        ('model', LogisticRegression())
    ])
    pipeline.fit(X, y)
    ```
 
-2. **ScoreCardWrapper (Recommended for Business Analysts):**
+3. **Automated Report:**
    ```python
-   from ScoreCardModel.score_card.wrapper import ScoreCardWrapper
-   
-   sc = ScoreCardWrapper(binning_strategy='quantile', base_points=600)
-   sc.fit(X, y)
-   scores = sc.predict(X_new)
+   from ScoreCardModel.analytics.reporting import generate_report
+   generate_report(pipeline, X_train, y_train, X_test, y_test)
    ```
 
-Professional Reports:
----------------------
-```python
-from ScoreCardModel.analytics.plotting import plot_ks, plot_bin_stats
-plot_ks(y_test, y_prob)
-```
+4. **Scorecard Templates:**
+   ```python
+   from ScoreCardModel.templates import BaseScorecard
+   sc = BaseScorecard()
+   sc.fit(X_train, y_train)
+   ```
+
+For detailed WOE method selection and diagnostic guidance, see:
+  `docs/user_guide/woe_in_depth.md`
 """
 
 __version__ = "2.0.0"
 
 from ScoreCardModel.binning.transformers import BinningTransformer
-from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
 from ScoreCardModel.score_card.transformers import ScoreCardTransformer
 from ScoreCardModel.score_card.wrapper import ScoreCardWrapper
+from ScoreCardModel.templates import BaseScorecard, ConservativeScorecard
+from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
 
 __all__ = [
     "BinningTransformer",
     "WOETransformer",
     "ScoreCardTransformer",
     "ScoreCardWrapper",
+    "BaseScorecard",
+    "ConservativeScorecard",
 ]

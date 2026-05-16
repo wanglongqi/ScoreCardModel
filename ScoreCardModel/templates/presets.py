@@ -1,7 +1,9 @@
 from typing import Optional
+
 import pandas as pd
-from ScoreCardModel.score_card.wrapper import ScoreCardWrapper
+
 from ScoreCardModel.analytics.selection import select_by_iv
+from ScoreCardModel.score_card.wrapper import ScoreCardWrapper
 
 
 class BaseScorecard:

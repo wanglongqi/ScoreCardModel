@@ -1,14 +1,13 @@
-from typing import Dict, Optional
-import numpy as np
+
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 from ScoreCardModel.weight_of_evidence.methods import (
-    calculate_standard_woe,
     calculate_adjusted_woe,
     calculate_empirical_logit_woe,
     calculate_signed_woe,
+    calculate_standard_woe,
     calculate_weighted_woe,
 )
 
@@ -63,7 +62,7 @@ class WOETransformer(BaseEstimator, TransformerMixin):
         self.rare_level_label = rare_level_label
 
     @property
-    def iv(self) -> Dict[str, float]:
+    def iv(self) -> dict[str, float]:
         """Expose calculated Information Value for each feature."""
         if not hasattr(self, 'iv_'):
             return {}
@@ -85,17 +84,17 @@ class WOETransformer(BaseEstimator, TransformerMixin):
         if x.isna().any().any():
             raise ValueError("Input X contains NaN values. Impute before fitting WOE.")
 
-        self.woe_maps_: Dict[str, Dict[str, float]] = {}
-        self.iv_: Dict[str, float] = {}
+        self.woe_maps_: dict[str, dict[str, float]] = {}
+        self.iv_: dict[str, float] = {}
 
         for col in x.columns:
             df = pd.DataFrame({'bin': x[col], 'target': y})
 
             if self.rare_lumping:
-                counts = df['bin'].value_counts()
-                rare_levels = counts[counts / len(df) < self.min_bin_pct].index
+                level_counts = df['bin'].value_counts()
+                rare_levels = set(level_counts[level_counts / len(df) < self.min_bin_pct].index)
                 df['bin'] = df['bin'].apply(
-                    lambda v: self.rare_level_label if v in rare_levels else v
+                    lambda v, rl=rare_levels: self.rare_level_label if v in rl else v
                 )
 
             grouped = df.groupby('bin')['target'].agg(['sum', 'count'])

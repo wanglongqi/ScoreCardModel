@@ -1,14 +1,14 @@
-from typing import Dict, List, Tuple
+
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2_contingency, spearmanr
 
 
 def check_monotonicity(
-    woe_map: Dict[str, float],
-    ordered_bins: List[str],
+    woe_map: dict[str, float],
+    ordered_bins: list[str],
     strength_threshold: float = 0.8,
-) -> Tuple[str, float]:
+) -> tuple[str, float]:
     """Check if WOE values are monotonic across ordered bins.
 
     Parameters
@@ -39,7 +39,7 @@ def check_monotonicity(
         diffs = np.diff(values)
         if np.all(diffs >= -1e-6):
             return 'increasing', corr
-        elif np.all(diffs <= 1e-6):
+        if np.all(diffs <= 1e-6):
             return 'decreasing', corr
 
     return 'non-monotonic', corr
@@ -61,7 +61,7 @@ def iv_by_bin(
     return (dist_good - dist_bad) * woe
 
 
-def woe_chi_square(bin_series: pd.Series, target: pd.Series) -> Tuple[float, float]:
+def woe_chi_square(bin_series: pd.Series, target: pd.Series) -> tuple[float, float]:
     """Chi-square test of independence between bins and target.
 
     Returns (chi2_statistic, p_value).
@@ -73,8 +73,8 @@ def woe_chi_square(bin_series: pd.Series, target: pd.Series) -> Tuple[float, flo
 
 
 def midpoint_correlation(
-    bin_edges: List[float],
-    woe_values: List[float],
+    bin_edges: list[float],
+    woe_values: list[float],
 ) -> float:
     """Spearman correlation between bin midpoints and WOE values.
 

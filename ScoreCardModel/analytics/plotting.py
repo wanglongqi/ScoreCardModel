@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import auc, roc_curve, confusion_matrix
 from sklearn.calibration import calibration_curve
+from sklearn.metrics import auc, confusion_matrix, roc_curve
 
 from ScoreCardModel.analytics.metrics import calculate_psi
 from ScoreCardModel.weight_of_evidence.diagnostics import check_monotonicity
@@ -24,7 +25,7 @@ def plot_ks(y_true: np.ndarray, y_prob: np.ndarray, title: str = "KS Curve") -> 
     ax.annotate(f'KS = {ks_stat:.3f}', xy=(ks_idx / len(diff), ks_stat),
                 fontsize=12, fontweight='bold',
                 xytext=(ks_idx / len(diff) + 0.05, ks_stat + 0.05),
-                arrowprops=dict(arrowstyle='->', color='black'))
+                arrowprops={"arrowstyle": '->', "color": 'black'})
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -126,10 +127,10 @@ def plot_double_lift(
     y_true: np.ndarray,
     y_prob_a: np.ndarray,
     y_prob_b: np.ndarray,
-    labels: Tuple[str, str] = ('Population A', 'Population B'),
+    labels: tuple[str, str] = ('Population A', 'Population B'),
 ) -> plt.Figure:
     """Double-lift chart comparing model performance across two populations."""
-    def _lift(y_true_: np.ndarray, y_prob_: np.ndarray) -> List[float]:
+    def _lift(y_true_: np.ndarray, y_prob_: np.ndarray) -> list[float]:
         order = np.argsort(y_prob_)[::-1]
         y_sorted = y_true_[order]
         base_rate = y_sorted.mean()
@@ -228,8 +229,8 @@ def plot_psi_drift(reference_scores: np.ndarray, current_scores: np.ndarray,
     return fig
 
 
-def plot_woe_pattern(woe_map: Dict[str, float], ordered_bins: List[str],
-                     counts: Optional[List[int]] = None,
+def plot_woe_pattern(woe_map: dict[str, float], ordered_bins: list[str],
+                     counts: Optional[list[int]] = None,
                      feature_name: str = "", iv: float = 0.0) -> plt.Figure:
     """WOE characteristic plot with monotonicity annotation and population %."""
     valid_bins = [b for b in ordered_bins if b in woe_map]
@@ -246,7 +247,7 @@ def plot_woe_pattern(woe_map: Dict[str, float], ordered_bins: List[str],
 
     if counts:
         total = sum(counts)
-        for i, (bar, cnt) in enumerate(zip(bars, counts)):
+        for _i, (bar, cnt) in enumerate(zip(bars, counts)):
             pct = cnt / total * 100
             y_pos = bar.get_height() + (0.02 if bar.get_height() >= 0 else -0.08)
             ax1.text(bar.get_x() + bar.get_width() / 2, y_pos,
@@ -261,7 +262,7 @@ def plot_woe_pattern(woe_map: Dict[str, float], ordered_bins: List[str],
     return fig
 
 
-def plot_iv_summary_enhanced(iv_dict: Dict[str, float]) -> plt.Figure:
+def plot_iv_summary_enhanced(iv_dict: dict[str, float]) -> plt.Figure:
     """Enhanced IV ranking bar chart with color-coded predictive power categories."""
     if not iv_dict:
         fig, ax = plt.subplots(figsize=(10, 4))
@@ -335,14 +336,13 @@ def plot_iv_summary(iv_dict: dict) -> plt.Figure:
     return plot_iv_summary_enhanced(iv_dict)
 
 
-def plot_scorecard_waterfall(contributions: Dict[str, float],
+def plot_scorecard_waterfall(contributions: dict[str, float],
                              base_points: float = 600,
                              final_score: Optional[float] = None) -> plt.Figure:
     """Waterfall chart showing how each feature contributes to the final score."""
     labels = ['Base Points'] + list(contributions.keys())
     values = [base_points] + list(contributions.values())
 
-    bottom = 0
     fig, ax = plt.subplots(figsize=(12, 6))
     colors_list = ['gray'] + ['#2ecc71' if v >= 0 else '#e74c3c' for v in values[1:]]
 
@@ -350,7 +350,7 @@ def plot_scorecard_waterfall(contributions: Dict[str, float],
     for i in range(len(labels)):
         if i == 0:
             ax.bar(i, values[i], color='gray', alpha=0.7)
-            bottom = values[i]
+            values[i]
         else:
             ax.bar(i, values[i], bottom=running[i - 1] - values[i],
                    color=colors_list[i], alpha=0.7)
@@ -417,7 +417,7 @@ def plot_cutoff_optimization(y_true: np.ndarray, y_prob: np.ndarray,
         tp = ((pred == 1) & (y_true == 1)).sum()
         fp = ((pred == 1) & (y_true == 0)).sum()
         fn = ((pred == 0) & (y_true == 1)).sum()
-        tn = ((pred == 0) & (y_true == 0)).sum()
+        ((pred == 0) & (y_true == 0)).sum()
         approval_rates.append((tp + fp) / len(y_true))
         bad_rates.append(fp / (tp + fp) if (tp + fp) > 0 else 0)
         profits.append(tp * 1.0 - fp * cost_fp - fn * cost_fn)

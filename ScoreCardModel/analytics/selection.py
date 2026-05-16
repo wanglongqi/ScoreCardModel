@@ -1,9 +1,13 @@
-from typing import List, Optional
+
 import numpy as np
 import pandas as pd
-from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
+
 from ScoreCardModel.binning.transformers import BinningTransformer
-from ScoreCardModel.weight_of_evidence.diagnostics import check_monotonicity, woe_chi_square
+from ScoreCardModel.weight_of_evidence.diagnostics import (
+    check_monotonicity,
+    woe_chi_square,
+)
+from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
 
 
 def select_by_iv(
@@ -12,7 +16,7 @@ def select_by_iv(
     min_iv: float = 0.02,
     max_iv: float = 0.5,
     n_bins: int = 5,
-) -> List[str]:
+) -> list[str]:
     """Select features whose Information Value falls within [min_iv, max_iv]."""
     bt = BinningTransformer(n_bins=n_bins)
     X_bin = bt.fit_transform(X)
@@ -24,7 +28,7 @@ def select_by_iv(
 def select_by_correlation(
     X: pd.DataFrame,
     max_corr: float = 0.7,
-) -> List[str]:
+) -> list[str]:
     """Remove highly correlated features, keeping first in each pair."""
     corr_matrix = X.corr().abs()
     upper = corr_matrix.where(
@@ -96,5 +100,4 @@ def rank_features(
             'Recommendation': rec,
         })
 
-    result = pd.DataFrame(rows).sort_values('IV', ascending=False).reset_index(drop=True)
-    return result
+    return pd.DataFrame(rows).sort_values('IV', ascending=False).reset_index(drop=True)

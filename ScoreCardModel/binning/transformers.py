@@ -1,10 +1,11 @@
-from typing import Any, Dict, List, Optional
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-from sklearn.tree import DecisionTreeClassifier
 from optbinning import OptimalBinning
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.utils.validation import check_is_fitted
 
 VALID_STRATEGIES = {'quantile', 'uniform', 'optimal', 'tree'}
 
@@ -24,8 +25,8 @@ class BinningTransformer(BaseEstimator, TransformerMixin):
         self, 
         strategy: str = 'quantile', 
         n_bins: int = 5, 
-        variables: Optional[List[str]] = None,
-        bin_definitions: Optional[Dict[str, List[float]]] = None
+        variables: Optional[list[str]] = None,
+        bin_definitions: Optional[dict[str, list[float]]] = None
     ):
         if strategy not in VALID_STRATEGIES:
             raise ValueError(f"Unknown strategy: {strategy}. Valid: {sorted(VALID_STRATEGIES)}")
