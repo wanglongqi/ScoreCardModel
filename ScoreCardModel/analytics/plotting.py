@@ -61,6 +61,8 @@ def plot_roc(y_true: np.ndarray, y_prob: np.ndarray) -> plt.Figure:
 
 def plot_cap(y_true: np.ndarray, y_prob: np.ndarray) -> plt.Figure:
     """Cumulative Accuracy Profile (CAP) / Lorenz curve with Accuracy Ratio."""
+    y_true = np.asarray(y_true)
+    y_prob = np.asarray(y_prob)
     n = len(y_true)
     order = np.argsort(y_prob)[::-1]
     y_sorted = y_true[order]
@@ -89,6 +91,8 @@ def plot_cap(y_true: np.ndarray, y_prob: np.ndarray) -> plt.Figure:
 
 def plot_gain_lift(y_true: np.ndarray, y_prob: np.ndarray) -> plt.Figure:
     """Gain and Lift chart (decile-based)."""
+    y_true = np.asarray(y_true)
+    y_prob = np.asarray(y_prob)
     n = len(y_true)
     order = np.argsort(y_prob)[::-1]
     y_sorted = y_true[order]
@@ -130,6 +134,10 @@ def plot_double_lift(
     labels: tuple[str, str] = ('Population A', 'Population B'),
 ) -> plt.Figure:
     """Double-lift chart comparing model performance across two populations."""
+    y_true = np.asarray(y_true)
+    y_prob_a = np.asarray(y_prob_a)
+    y_prob_b = np.asarray(y_prob_b)
+
     def _lift(y_true_: np.ndarray, y_prob_: np.ndarray) -> list[float]:
         order = np.argsort(y_prob_)[::-1]
         y_sorted = y_true_[order]
@@ -159,6 +167,8 @@ def plot_double_lift(
 def plot_score_distribution(scores: np.ndarray, y_true: np.ndarray,
                             title: str = "Score Distribution by Population") -> plt.Figure:
     """Overlaid score distribution for good vs bad populations."""
+    y_true = np.asarray(y_true)
+    scores = np.asarray(scores)
     fig, ax = plt.subplots(figsize=(10, 6))
     good_scores = scores[y_true == 1]
     bad_scores = scores[y_true == 0]

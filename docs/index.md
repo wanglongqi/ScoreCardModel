@@ -22,6 +22,7 @@ ScoreCardModel is a professional toolset for scorecard modeling, fully compatibl
 | `ScoreCardModel.analytics` | Metrics, 16+ plot types, automated HTML reports, feature selection |
 | `ScoreCardModel.templates` | Pre-built scorecard configurations |
 
-## Examples
+## Examples & Visualizations
 
-- [Full Examples](examples.md) — End-to-end scorecard development
+- [Full Examples](examples.md) — End-to-end scorecard development with real output
+- [Visualizations](examples.md#visualizations) — KS, ROC, CAP, Gain/Lift, WOE patterns, scorecard heatmaps, and more

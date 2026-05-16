@@ -102,3 +102,60 @@ Output:
 2     mean texture  1.1140  ...         0.0    Investigate
 3  mean smoothness  0.6435  ...         0.0    Investigate
 ```
+
+## Visualizations
+
+All plots are generated from a model trained on the breast cancer dataset (4 features, quantile binning). The plots below are real output — not mockups.
+
+### Model Discrimination
+
+| KS Curve | ROC Curve | CAP Curve |
+|---|---|---|
+| ![KS Curve](images/ks_curve.png) | ![ROC Curve](images/roc_curve.png) | ![CAP Curve](images/cap_curve.png) |
+
+KS measures the maximum separation between good and bad populations. ROC shows the trade-off between TPR and FPR. CAP (Cumulative Accuracy Profile) shows the model's cumulative lift over random selection.
+
+### Performance Diagnostics
+
+| Gain / Lift | Score Distribution | Calibration |
+|---|---|---|
+| ![Gain Lift](images/gain_lift.png) | ![Score Distribution](images/score_distribution.png) | ![Calibration](images/calibration.png) |
+
+Gain/Lift charts show how well the model ranks risk at each decile. Score distribution compares score profiles of good vs bad accounts. Calibration plots assess whether predicted probabilities match observed event rates.
+
+### WOE and IV Analysis
+
+| WOE Pattern | IV Summary |
+|---|---|
+| ![WOE Pattern](images/woe_pattern.png) | ![IV Summary](images/iv_summary.png) |
+
+WOE pattern plots show the relationship between bins and their Weight of Evidence. IV summary ranks features by Information Value for feature selection.
+
+### Scorecard Interpretation
+
+| Scorecard Waterfall | Scorecard Heatmap |
+|---|---|
+| ![Scorecard Waterfall](images/scorecard_waterfall.png) | ![Scorecard Heatmap](images/scorecard_heatmap.png) |
+
+Waterfall charts show how each feature contributes to the final score. Heatmaps provide a bird's-eye view of the scorecard table.
+
+### Decision Threshold
+
+| Cutoff Optimization | Confusion Matrix |
+|---|---|
+| ![Cutoff Optimization](images/cutoff_optimization.png) | ![Confusion Matrix](images/confusion_matrix.png) |
+
+Cutoff optimization identifies the optimal decision threshold by balancing cost/benefit. The confusion matrix shows classification performance at the chosen cutoff.
+
+### Automated HTML Report
+
+```python
+from ScoreCardModel.analytics.reporting import generate_report
+
+generate_report(pipeline, X_train, y_train, X_test, y_test,
+                output_path="scorecard_report.html")
+```
+
+The report is a standalone, self-contained HTML file with all key plots, metrics, and the scorecard table — suitable for sharing with stakeholders or regulatory review.
+
+[View Example Report](example_report.html)
