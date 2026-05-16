@@ -17,7 +17,7 @@ A professional and modern toolset for scorecard modeling, fully compatible with 
 ## Installation
 
 ```bash
-pip install ScoreCardModel
+pip install scorecard-toolkit
 ```
 
 From source:
