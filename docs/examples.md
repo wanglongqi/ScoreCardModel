@@ -179,4 +179,75 @@ generate_report(pipeline, X_train, y_train, X_test, y_test,
 
 The report is a markdown file with embedded PNG plots and the full scorecard table — suitable for sharing with stakeholders or regulatory review.
 
-[View Example Report](example_report.md)
+[View Breast Cancer Report](examples/breast_cancer_report.md)
+
+## Dataset Examples
+
+The following examples demonstrate the full scorecard workflow on four real-world datasets spanning different domains, sizes, and data types.
+
+### German Credit
+
+- **1,000 rows**, 20 features (7 numeric + 13 categorical)
+- **30% default rate**
+- Demonstrates mixed-type handling — categorical features are auto-detected by `BinningTransformer`
+- Full report includes score distribution, KS curve, ROC, scorecard table, and cutoff analysis
+
+```python
+data = fetch_openml('credit-g', as_frame=True, parser='pandas')
+X, y = data.data, (data.target == 'good').astype(int)
+
+ranking = rank_features(X_train, y_train, n_bins=4)
+final = ranking[ranking['Recommendation'].isin(['Accept', 'Investigate'])]['Feature'].tolist()
+# 13 features selected
+```
+
+```
+KS: 0.481
+```
+
+[View Report](examples/german_credit_report.md)
+
+### Taiwan Credit (Default of Credit Card Clients)
+
+- **30,000 rows**, 23 numeric features
+- **22% default rate**
+- Features are anonymized (x1–x23) from the original UCI dataset
+- Demonstrates large-dataset performance with 13 selected features
+
+```python
+data = fetch_openml('default-of-credit-card-clients', as_frame=True, parser='pandas', version=1)
+X, y = data.data, (data.target == '0').astype(int)
+
+ranking = rank_features(X_train, y_train, n_bins=5)
+final = accept + investigate  # 13 features: x1, x6–x11, x18–x23
+```
+
+```
+KS: 0.407
+```
+
+[View Report](examples/taiwan_credit_report.md)
+
+### Give Me Some Credit
+
+- **150,000 rows**, 10 features (6 integer + 4 float)
+- **6.7% default rate** — heavily imbalanced
+- Requires missing value imputation for `MonthlyIncome` (20% NaN) and `NumberOfDependents` (2.6% NaN)
+- Demonstrates imbalanced dataset handling with 6 selected features
+
+```python
+data = fetch_openml('give-me-some-credit', as_frame=True, parser='pandas', version=1)
+X, y = data.data, (data.target == '0').astype(int)
+
+X['MonthlyIncome'] = X['MonthlyIncome'].fillna(X['MonthlyIncome'].median())
+X['NumberOfDependents'] = X['NumberOfDependents'].fillna(0)
+
+ranking = rank_features(X_train, y_train, n_bins=10)
+final = accept + investigate  # 6 features
+```
+
+```
+KS: 0.368
+```
+
+[View Report](examples/give_me_some_credit_report.md)

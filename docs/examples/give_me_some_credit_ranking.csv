@@ -1,0 +1,11 @@
+Feature,IV,IV_Label,Monotonicity,Mono_Strength,Chi2_pvalue,Recommendation
+RevolvingUtilizationOfUnsecuredLines,1.0987,suspicious,non-monotonic,0.867,0.0,Investigate
+NumberOfTime30-59DaysPastDueNotWorse,0.4713,strong,single_bin,1.0,0.0,Accept
+age,0.2658,medium,increasing,1.0,0.0,Accept
+DebtRatio,0.0747,weak,non-monotonic,0.2,0.0,Accept
+MonthlyIncome,0.0694,weak,non-monotonic,0.483,0.0,Accept
+NumberOfOpenCreditLinesAndLoans,0.0644,weak,non-monotonic,0.6,0.0,Accept
+NumberOfDependents,0.0222,weak,decreasing,1.0,0.0,Accept
+NumberRealEstateLoansOrLines,0.0102,useless,non-monotonic,0.5,0.0,Reject
+NumberOfTimes90DaysLate,0.0,useless,single_bin,1.0,1.0,Reject
+NumberOfTime60-89DaysPastDueNotWorse,0.0,useless,single_bin,1.0,1.0,Reject

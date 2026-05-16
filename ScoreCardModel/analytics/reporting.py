@@ -80,16 +80,18 @@ def generate_report(
     # ── Summary ──
     lines.append("## Executive Summary")
     lines.append("")
+    ks_qual = "very strong" if ks > 0.7 else "strong" if ks > 0.5 else "reasonable"
+
     lines.append(f"This report evaluates a credit scorecard model built on {n_features} features using "
                  f"Logistic Regression with WOE transformation. The model achieves a KS statistic of "
                  f"**{ks:.1%}** and an AUC of **{auc:.3f}** (Accuracy Ratio = {accuracy_ratio:.3f}), "
-                 f"indicating strong discriminatory power between good and bad accounts.")
+                 f"indicating {ks_qual} discriminatory power between good and bad accounts.")
     lines.append("")
 
-    ks_qual = "very strong" if ks > 0.7 else "strong" if ks > 0.5 else "moderate"
+    ks_guide = "very strong (excellent)" if ks > 0.7 else "strong (good)" if ks > 0.5 else "moderate (acceptable)"
     lines.append(
         f"**KS = {ks:.1%}** — the maximum separation between cumulative good and bad distributions. "
-        f"A KS above 0.5 is generally considered {ks_qual} for credit scorecards."
+        f"This is considered {ks_guide} for credit scorecards."
     )
     lines.append("")
     lines.append(
