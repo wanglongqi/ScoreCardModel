@@ -25,6 +25,14 @@ class ScoreCardTransformer(BaseEstimator, TransformerMixin):
         self.model = model
         self.binning_transformer = binning_transformer
         self.woe_transformer = woe_transformer
+        
+        if pdo <= 0:
+            raise ValueError(f"PDO must be > 0, got {pdo}")
+        if base_points <= 0:
+            raise ValueError(f"base_points must be > 0, got {base_points}")
+        if base_odds <= 0:
+            raise ValueError(f"base_odds must be > 0, got {base_odds}")
+        
         self.base_points = base_points
         self.base_odds = base_odds
         self.pdo = pdo

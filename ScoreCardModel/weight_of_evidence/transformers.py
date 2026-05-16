@@ -16,12 +16,12 @@ class WOETransformer(BaseEstimator, TransformerMixin):
     
     def __init__(self, laplace_smoothing: float = 1e-6):
         self.laplace_smoothing = laplace_smoothing
-        self.woe_maps_: Dict[str, Dict[str, float]] = {}
-        self.iv_: Dict[str, float] = {}
 
     @property
     def iv(self) -> Dict[str, float]:
         """Expose calculated Information Value for each feature."""
+        if not hasattr(self, 'iv_'):
+            return {}
         return self.iv_
 
     def fit(self, x: pd.DataFrame, y: pd.Series) -> "WOETransformer":
@@ -30,7 +30,20 @@ class WOETransformer(BaseEstimator, TransformerMixin):
             x = pd.DataFrame(x)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-            
+
+        # Validate binary target
+        unique_vals = y.unique()
+        if not set(unique_vals).issubset({0, 1}):
+            raise ValueError(
+                f"Target 'y' must be binary with values 0/1, got: {sorted(unique_vals)}"
+            )
+
+        # Check for NaN in X
+        if x.isna().any().any():
+            raise ValueError("Input X contains NaN values. Impute before fitting WOE.")
+
+        self.woe_maps_: Dict[str, Dict[str, float]] = {}
+        self.iv_: Dict[str, float] = {}
         for col in x.columns:
             # Group by bin and calculate counts of good (1) and bad (0)
             df = pd.DataFrame({'bin': x[col], 'target': y})
@@ -59,10 +72,10 @@ class WOETransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, x: pd.DataFrame) -> pd.DataFrame:
         """Replace bins with their corresponding WOE values."""
-        check_is_fitted(self)
+        check_is_fitted(self, 'woe_maps_')
         x_out = x.copy()
         
         for col, woe_map in self.woe_maps_.items():
-            x_out[col] = x_out[col].map(woe_map)
+            x_out[col] = x_out[col].map(woe_map).fillna(0.0)
             
         return x_out
