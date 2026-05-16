@@ -90,3 +90,35 @@ class ScoreCardTransformer(BaseEstimator, TransformerMixin):
                 })
                 
         return pd.DataFrame(rows)
+
+    def _repr_html_(self) -> str:
+        """HTML representation for Jupyter notebooks."""
+        try:
+            card = self.export_scorecard()
+        except Exception:
+            return None
+        if card.empty:
+            return "<p><i>Empty scorecard</i></p>"
+        rows_html = ""
+        for _, row in card.iterrows():
+            woe_str = f"{row['WOE']:.4f}"
+            pts_str = f"{row['Points']:.2f}"
+            rows_html += (
+                f"<tr style='border-bottom:1px solid #ddd'>"
+                f"<td style='padding:4px 8px'>{row['Variable']}</td>"
+                f"<td style='padding:4px 8px'>{row['Bin']}</td>"
+                f"<td style='padding:4px 8px;text-align:right'>{woe_str}</td>"
+                f"<td style='padding:4px 8px;text-align:right'>{pts_str}</td>"
+                f"</tr>"
+            )
+        return (
+            "<table style='border-collapse:collapse;width:100%;font-family:monospace;font-size:13px'>"
+            "<thead><tr style='background:#f5f5f5;border-bottom:2px solid #ccc'>"
+            "<th style='padding:6px 8px;text-align:left'>Variable</th>"
+            "<th style='padding:6px 8px;text-align:left'>Bin</th>"
+            "<th style='padding:6px 8px;text-align:right'>WOE</th>"
+            "<th style='padding:6px 8px;text-align:right'>Points</th>"
+            "</tr></thead>"
+            f"<tbody>{rows_html}</tbody>"
+            "</table>"
+        )

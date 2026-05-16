@@ -44,6 +44,10 @@ Repository = "https://github.com/wanglongqi/ScoreCardModel"
 Documentation = "https://github.com/wanglongqi/ScoreCardModel/tree/master/docs"
 
 [project.optional-dependencies]
+interactive = [
+    "ipywidgets>=8.0",
+    "ipython>=8.0",
+]
 test = [
     "pytest",
     "pytest-cov",

@@ -192,6 +192,20 @@ The report is a markdown file with embedded PNG plots and the full scorecard tab
 
 [View Taiwan Credit Report](examples/taiwan_credit_report.md)
 
+### Interactive What-If Widget (Jupyter)
+
+```python
+# Requires: pip install scorecard-toolkit[interactive]
+from ScoreCardModel.interactive import ScorecardWidget
+
+widget = ScorecardWidget(pipeline, X_train)
+widget.display()
+```
+
+Opens an interactive dashboard in the notebook: sliders/dropdowns for each feature, real-time score display, and a live waterfall chart. The widget is purely client-side — no server needed.
+
+[View Interactive Notebook](examples/interactive_scorecard.ipynb)
+
 ## Dataset Examples
 
 The following examples demonstrate the full scorecard workflow on four real-world datasets spanning different domains, sizes, and data types.
