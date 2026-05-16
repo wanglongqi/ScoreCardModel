@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from ScoreCardModel.binning.transformers import BinningTransformer
 
 
@@ -67,7 +68,7 @@ def test_optimal_strategy():
 
 def test_transform_unfitted_raises():
     bt = BinningTransformer()
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="fitted"):
         bt.transform(pd.DataFrame({'age': [1, 2, 3]}))
 
 

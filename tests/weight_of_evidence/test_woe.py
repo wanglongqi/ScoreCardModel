@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
 
 
@@ -116,5 +117,5 @@ def test_woe_methods_produce_different_results():
         assert not np.isinf(wt_std.woe_maps_['bin'][k])
         assert wt_std.woe_maps_['bin'][k] == pytest.approx(wt_adj.woe_maps_['bin'][k], abs=1e-1)
     wt = WOETransformer()
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="fitted"):
         wt.transform(pd.DataFrame({'bin': ['A']}))

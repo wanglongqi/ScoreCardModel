@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from ScoreCardModel.analytics.metrics import calculate_ks, calculate_psi, calculate_accuracy_ratio
+
+from ScoreCardModel.analytics.metrics import calculate_accuracy_ratio, calculate_ks, calculate_psi
 
 
 def test_ks_perfect_separation():

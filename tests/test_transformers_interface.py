@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from sklearn.base import BaseEstimator, TransformerMixin
 
+
 # Define the expected interfaces for TDD
 class BinningTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, strategy='quantile', n_bins=5, bins=None):

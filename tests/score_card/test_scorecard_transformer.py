@@ -2,9 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.linear_model import LogisticRegression
+
 from ScoreCardModel.binning.transformers import BinningTransformer
-from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
 from ScoreCardModel.score_card.transformers import ScoreCardTransformer
+from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
 
 
 @pytest.fixture

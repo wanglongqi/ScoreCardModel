@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
-import pytest
+
 from ScoreCardModel.weight_of_evidence.diagnostics import (
+    bin_statistics,
     check_monotonicity,
     iv_by_bin,
-    woe_chi_square,
     midpoint_correlation,
-    bin_statistics,
+    woe_chi_square,
 )
 
 

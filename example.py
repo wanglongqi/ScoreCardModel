@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
+
 from ScoreCardModel import ScoreCardWrapper
 from ScoreCardModel.analytics.metrics import calculate_ks
 

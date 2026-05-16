@@ -1,10 +1,11 @@
 import numpy as np
 import pytest
+
 from ScoreCardModel.weight_of_evidence.methods import (
-    calculate_standard_woe,
     calculate_adjusted_woe,
     calculate_empirical_logit_woe,
     calculate_signed_woe,
+    calculate_standard_woe,
     calculate_weighted_woe,
 )
 

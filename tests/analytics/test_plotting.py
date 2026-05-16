@@ -1,16 +1,28 @@
+import matplotlib
 import numpy as np
 import pandas as pd
 import pytest
-import matplotlib
+
 matplotlib.use('Agg')
 
 from ScoreCardModel.analytics.plotting import (
-    plot_ks, plot_roc, plot_cap, plot_gain_lift, plot_double_lift,
-    plot_score_distribution, plot_calibration, plot_psi_drift,
-    plot_woe_pattern, plot_iv_summary_enhanced, plot_event_rate_by_bin,
-    plot_scorecard_waterfall, plot_scorecard_heatmap,
-    plot_cutoff_optimization, plot_confusion_matrix,
-    plot_bin_stats, plot_iv_summary,
+    plot_bin_stats,
+    plot_calibration,
+    plot_cap,
+    plot_confusion_matrix,
+    plot_cutoff_optimization,
+    plot_double_lift,
+    plot_event_rate_by_bin,
+    plot_gain_lift,
+    plot_iv_summary,
+    plot_iv_summary_enhanced,
+    plot_ks,
+    plot_psi_drift,
+    plot_roc,
+    plot_score_distribution,
+    plot_scorecard_heatmap,
+    plot_scorecard_waterfall,
+    plot_woe_pattern,
 )
 
 
@@ -157,4 +169,4 @@ def test_all_plots_have_different_figures(sample_scores):
         plot_roc(y_true, y_prob),
         plot_cap(y_true, y_prob),
     ]
-    assert len(set(id(f) for f in figs)) == len(figs)
+    assert len({id(f) for f in figs}) == len(figs)

@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from ScoreCardModel.analytics.selection import select_by_iv, select_by_correlation, rank_features
+
+from ScoreCardModel.analytics.selection import rank_features, select_by_correlation, select_by_iv
 
 
 @pytest.fixture

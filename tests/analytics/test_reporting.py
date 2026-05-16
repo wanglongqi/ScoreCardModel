@@ -1,13 +1,15 @@
+import matplotlib
 import numpy as np
 import pandas as pd
 import pytest
-import matplotlib
+
 matplotlib.use('Agg')
-from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+
+from ScoreCardModel.analytics.reporting import generate_report
 from ScoreCardModel.binning.transformers import BinningTransformer
 from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
-from ScoreCardModel.analytics.reporting import generate_report
 
 
 @pytest.fixture
@@ -31,7 +33,7 @@ def trained_pipeline():
 def test_generate_report_creates_file(trained_pipeline, tmp_path):
     pipe, X, y = trained_pipeline
     output = tmp_path / "report.html"
-    result = generate_report(pipe, X, y, X, y, output_path=str(output))
+    generate_report(pipe, X, y, X, y, output_path=str(output))
     assert output.exists()
     assert output.stat().st_size > 500
 
@@ -55,5 +57,5 @@ def test_generate_report_without_scorecard(tmp_path):
     ])
     pipe.fit(X, y)
     output = tmp_path / "simple_report.html"
-    result = generate_report(pipe, X, y, X, y, output_path=str(output))
+    generate_report(pipe, X, y, X, y, output_path=str(output))
     assert output.exists()
