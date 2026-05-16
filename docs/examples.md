@@ -9,9 +9,18 @@ from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from ScoreCardModel.analytics.selection import rank_features
 
+COLUMN_MAP = {
+    'x1': 'LIMIT_BAL', 'x2': 'SEX', 'x3': 'EDUCATION', 'x4': 'MARRIAGE', 'x5': 'AGE',
+    'x6': 'PAY_0', 'x7': 'PAY_2', 'x8': 'PAY_3', 'x9': 'PAY_4', 'x10': 'PAY_5', 'x11': 'PAY_6',
+    'x12': 'BILL_AMT1', 'x13': 'BILL_AMT2', 'x14': 'BILL_AMT3', 'x15': 'BILL_AMT4',
+    'x16': 'BILL_AMT5', 'x17': 'BILL_AMT6',
+    'x18': 'PAY_AMT1', 'x19': 'PAY_AMT2', 'x20': 'PAY_AMT3', 'x21': 'PAY_AMT4',
+    'x22': 'PAY_AMT5', 'x23': 'PAY_AMT6',
+}
+
 data = fetch_openml('default-of-credit-card-clients', as_frame=True,
                     parser='pandas', version=1)
-X = data.data
+X = data.data.rename(columns=COLUMN_MAP)
 y = (data.target == '0').astype(int)
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=42
@@ -24,18 +33,20 @@ print(ranking)
 Output (23 features ranked by IV):
 
 ```
-   Feature      IV    IV_Label   Monotonicity  ... Chi2_pvalue Recommendation
-0       x6  0.8816  suspicious     decreasing  ...     0.0000    Investigate
-1       x7  0.5704  suspicious     decreasing  ...     0.0000    Investigate
-2       x8  0.4354      strong  non-monotonic  ...     0.0000         Accept
-3       x9  0.3673      strong  non-monotonic  ...     0.0000         Accept
+      Feature      IV    IV_Label   Monotonicity  ... Chi2_pvalue Recommendation
+0       PAY_0  0.8816  suspicious     decreasing  ...     0.0000    Investigate
+1       PAY_2  0.5704  suspicious     decreasing  ...     0.0000    Investigate
+2       PAY_3  0.4354      strong  non-monotonic  ...     0.0000         Accept
+3       PAY_4  0.3673      strong  non-monotonic  ...     0.0000         Accept
 ...
-12     x22  0.0694        weak     increasing  ...     0.0000         Accept
-13      x3  0.0193     useless  non-monotonic  ...     0.0000         Reject
+12   PAY_AMT5  0.0694        weak     increasing  ...     0.0000         Accept
+13   EDUCATION  0.0193     useless  non-monotonic  ...     0.0000         Reject
 ...
-21      x4  0.0057     useless  non-monotonic  ...     0.5000         Reject
-22      x2  0.0000     useless     single_bin  ...     1.0000         Reject
+21   MARRIAGE  0.0057     useless  non-monotonic  ...     0.5000         Reject
+22        SEX  0.0000     useless     single_bin  ...     1.0000         Reject
 ```
+
+Feature names are mapped from the original UCI dataset (PAY_0–PAY_6 = repayment status history, LIMIT_BAL = credit limit, PAY_AMT1–PAY_AMT6 = payment amounts, etc.).
 
 The `Recommendation` column guides the decision:
 - **Reject** — IV < 0.02 (useless)
@@ -66,7 +77,7 @@ Output:
 ```
 Candidates: 13 features
 After correlation filter: 9 features
-['x8', 'x1', 'x18', 'x19', 'x20', 'x23', 'x21', 'x22', 'x6']
+['PAY_3', 'LIMIT_BAL', 'PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT6', 'PAY_AMT4', 'PAY_AMT5', 'PAY_0']
 ```
 
 ## End-to-End Pipeline
@@ -111,17 +122,17 @@ print(card.head(10))
 Output:
 
 ```
-  Variable                   Bin       WOE  Points
-0       x8           (-1.0, 0.0]  0.304362   62.04
-1       x8          (-inf, -1.0]  0.353610   62.67
-2       x8            (0.0, inf] -1.393825   40.22
-3       x1       (-inf, 50000.0] -0.520152   51.85
-4       x1  (100000.0, 180000.0]  0.159326   60.05
-5       x1  (180000.0, 270000.0]  0.301749   61.77
-6       x1       (270000.0, inf]  0.589377   65.24
-7       x1   (50000.0, 100000.0] -0.165176   56.13
-8      x18         (-inf, 316.0] -0.638325   52.43
-9      x18      (1714.0, 3000.0]  0.042485   58.50
+ Variable                  Bin       WOE  Points
+    PAY_3          (-1.0, 0.0]  0.304362   62.04
+    PAY_3         (-inf, -1.0]  0.353610   62.67
+    PAY_3           (0.0, inf] -1.393825   40.22
+LIMIT_BAL      (-inf, 50000.0] -0.520152   51.85
+LIMIT_BAL (100000.0, 180000.0]  0.159326   60.05
+LIMIT_BAL (180000.0, 270000.0]  0.301749   61.77
+LIMIT_BAL      (270000.0, inf]  0.589377   65.24
+LIMIT_BAL  (50000.0, 100000.0] -0.165176   56.13
+ PAY_AMT1        (-inf, 316.0] -0.638325   52.43
+ PAY_AMT1     (1714.0, 3000.0]  0.042485   58.50
 ```
 
 ## Visualizations
@@ -211,19 +222,21 @@ KS: 0.481
 
 - **30,000 rows**, 23 numeric features
 - **22% default rate**
-- Features are anonymized (x1–x23) from the original UCI dataset
-- Demonstrates large-dataset performance with 13 selected features
+- Features renamed from x1–x23 to UCI names (PAY_0–PAY_6 = payment status, LIMIT_BAL = credit limit, PAY_AMT1–PAY_AMT6 = payment amounts, etc.)
+- Demonstrates large-dataset performance with 9 selected features (after correlation filter)
 
 ```python
 data = fetch_openml('default-of-credit-card-clients', as_frame=True, parser='pandas', version=1)
-X, y = data.data, (data.target == '0').astype(int)
+X = data.data.rename(columns=COLUMN_MAP)
+y = (data.target == '0').astype(int)
 
 ranking = rank_features(X_train, y_train, n_bins=5)
-final = accept + investigate  # 13 features: x1, x6–x11, x18–x23
+final = select_by_correlation(X_train[candidates], max_corr=0.7)
+# 9 features: PAY_0, PAY_3, LIMIT_BAL, PAY_AMT1–PAY_AMT6
 ```
 
 ```
-KS: 0.407
+KS: 0.398
 ```
 
 [View Report](examples/taiwan_credit_report.md)
