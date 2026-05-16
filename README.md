@@ -17,9 +17,15 @@ A professional and modern toolset for scorecard modeling, fully compatible with 
 ## Installation
 
 ```bash
+pip install ScoreCardModel
+```
+
+From source:
+
+```bash
+git clone https://github.com/wanglongqi/ScoreCardModel.git
+cd ScoreCardModel
 pip install .
-# or with uv
-uv pip install .
 ```
 
 ## Quick Start

@@ -5,21 +5,28 @@ build-backend = "hatchling.build"
 [project]
 name = "ScoreCardModel"
 version = "2.0.0"
-description = "A professional and modern toolset for scorecard modeling"
+description = "A professional and modern toolset for scorecard modeling, fully compatible with scikit-learn"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
+keywords = ["scorecard", "credit risk", "woe", "binning", "scikit-learn"]
 authors = [
-    "deepseek-v4+longqi",
+    {name = "deepseek-v4+longqi"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "numpy",
@@ -31,6 +38,11 @@ dependencies = [
     "seaborn",
 ]
 
+[project.urls]
+Homepage = "https://github.com/wanglongqi/ScoreCardModel"
+Repository = "https://github.com/wanglongqi/ScoreCardModel"
+Documentation = "https://github.com/wanglongqi/ScoreCardModel/tree/master/docs"
+
 [project.optional-dependencies]
 test = [
     "pytest",
@@ -41,6 +53,17 @@ dev = [
     "mypy",
     "pandas-stubs",
 ]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/ScoreCardModel",
+    "/tests",
+    "/docs",
+    "/example.py",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ScoreCardModel"]
 
 [tool.ruff]
 line-length = 100
