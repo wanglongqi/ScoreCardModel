@@ -132,8 +132,12 @@ def generate_report(
     lines.append("")
     ks_qual = "very strong" if ks > 0.7 else "strong" if ks > 0.5 else "reasonable"
 
+    wt = pipeline.named_steps.get('woe')
+    woe_method = wt.method if wt is not None and hasattr(wt, 'method') else 'adjusted'
+
     lines.append(f"This report evaluates a credit scorecard model built on {n_features} features using "
-                 f"Logistic Regression with WOE transformation. The model achieves a KS statistic of "
+                 f"Logistic Regression with **{woe_method}** WOE transformation. "
+                 f"The model achieves a KS statistic of "
                  f"**{ks:.1%}** and an AUC of **{auc:.3f}** (Accuracy Ratio = {accuracy_ratio:.3f}), "
                  f"indicating {ks_qual} discriminatory power between good and bad accounts.")
     lines.append("")

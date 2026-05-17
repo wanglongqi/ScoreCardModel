@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-This report evaluates a credit scorecard model built on 13 features using Logistic Regression with WOE transformation. The model achieves a KS statistic of **48.1%** and an AUC of **0.787** (Accuracy Ratio = 0.575), indicating reasonable discriminatory power between good and bad accounts.
+This report evaluates a credit scorecard model built on 13 features using Logistic Regression with **adjusted** WOE transformation. The model achieves a KS statistic of **49.1%** and an AUC of **0.787** (Accuracy Ratio = 0.574), indicating reasonable discriminatory power between good and bad accounts.
 
-**KS = 48.1%** — the maximum separation between cumulative good and bad distributions. This is considered moderate (acceptable) for credit scorecards.
+**KS = 49.1%** — the maximum separation between cumulative good and bad distributions. This is considered moderate (acceptable) for credit scorecards.
 
 **AUC = 0.787** — the probability that the model ranks a randomly chosen good account higher than a randomly chosen bad account. An AUC of 0.5 is random; values above 0.9 are excellent.
 
@@ -40,7 +40,7 @@ Cumulative goods captured as a function of the population fraction, ordered by r
 
 Information Value (IV) measures each feature's predictive power. Industry-standard interpretation: <0.02 useless, 0.02–0.1 weak, 0.1–0.3 medium, 0.3–0.5 strong, >0.5 suspicious (investigate for data leakage).
 
-The model uses 13 features with a total IV of **2.18**. The chart below ranks features by individual IV contribution.
+The model uses 13 features with a total IV of **2.21**. The chart below ranks features by individual IV contribution.
 
 ### Feature IV Ranking
 
@@ -48,13 +48,20 @@ The model uses 13 features with a total IV of **2.18**. The chart below ranks fe
 
 ### Top Features by IV
 
-| Feature         |     IV | Monotonicity   | Recommendation   |
-|:----------------|-------:|:---------------|:-----------------|
-| checking_status | 0.5873 | non-monotonic  | Investigate      |
-| credit_history  | 0.3714 | non-monotonic  | Accept           |
-| purpose         | 0.2299 | non-monotonic  | Accept           |
-| savings_status  | 0.1629 | non-monotonic  | Accept           |
-| credit_amount   | 0.1561 | non-monotonic  | Accept           |
+The table below ranks the top 10 features. Note the **Trend Advice**: features with 'Strong Trend (Minor Violations)' are highly predictive but have minor non-monotonic bins. In many practical cases, keeping these features provides significant performance gains compared to enforcing strict monotonicity.
+
+| Feature            |     IV | Monotonicity   | Trend_Advice                    | Recommendation          |
+|:-------------------|-------:|:---------------|:--------------------------------|:------------------------|
+| checking_status    | 0.5873 | non-monotonic  | Strong Trend (Minor Violations) | Investigate             |
+| credit_history     | 0.3714 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| purpose            | 0.2299 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| savings_status     | 0.1629 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| credit_amount      | 0.1561 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| duration           | 0.1513 | decreasing     | Good                            | Accept                  |
+| property_magnitude | 0.1458 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| housing            | 0.11   | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| age                | 0.1073 | increasing     | Good                            | Accept                  |
+| employment         | 0.0662 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
 
 ## Scorecard
 
@@ -64,63 +71,63 @@ The table below shows the full scorecard (57 rows across 13 features).
 
 | Variable            | Bin                            |        WOE |   Points |
 |:--------------------|:-------------------------------|-----------:|---------:|
-| checking_status     | 0<=X<200                       | -0.388748  |    30.84 |
-| checking_status     | <0                             | -0.786484  |    22.04 |
-| checking_status     | >=200                          |  0.46687   |    49.76 |
-| checking_status     | no checking                    |  1.06182   |    62.91 |
-| credit_history      | all paid                       | -1.08095   |    18.94 |
-| credit_history      | critical/other existing credit |  0.857564  |    55.69 |
-| credit_history      | delayed previously             |  0.0915878 |    41.17 |
-| credit_history      | existing paid                  | -0.160318  |    36.39 |
-| credit_history      | no credits/all paid            | -1.3937    |    13.01 |
-| purpose             | business                       | -0.388748  |    29.6  |
-| purpose             | domestic appliance             | -0.483646  |    27.2  |
-| purpose             | education                      | -0.851371  |    17.9  |
-| purpose             | furniture/equipment            |  0.0738349 |    41.3  |
-| purpose             | new car                        | -0.433636  |    28.46 |
-| purpose             | other                          | -0.851371  |    17.9  |
-| purpose             | radio/tv                       |  0.507441  |    52.27 |
-| purpose             | repairs                        | -0.0303906 |    38.66 |
-| purpose             | retraining                     |  0.614966  |    54.99 |
-| purpose             | used car                       |  0.648582  |    55.84 |
-| savings_status      | 100<=X<500                     | -0.189315  |    36.08 |
-| savings_status      | 500<=X<1000                    |  0.835028  |    54.21 |
-| savings_status      | <100                           | -0.230758  |    35.35 |
-| savings_status      | >=1000                         |  1.09454   |    58.8  |
-| savings_status      | no known savings               |  0.418784  |    46.84 |
-| credit_amount       | (-inf, 1381.75]                | -0.128243  |    36.5  |
-| credit_amount       | (1381.75, 2332.0]              |  0.388653  |    48.31 |
-| credit_amount       | (2332.0, 4226.0]               |  0.388653  |    48.31 |
-| credit_amount       | (4226.0, inf]                  | -0.542112  |    27.04 |
-| duration            | (-inf, 12.0]                   |  0.362643  |    44.42 |
-| duration            | (12.0, 18.0]                   |  0.141373  |    41.38 |
-| duration            | (18.0, 24.0]                   |  0.0973548 |    40.77 |
-| duration            | (24.0, inf]                    | -0.624209  |    30.85 |
-| property_magnitude  | car                            | -0.0442797 |    38.72 |
-| property_magnitude  | life insurance                 | -0.0503913 |    38.62 |
-| property_magnitude  | no known property              | -0.646959  |    29.02 |
-| property_magnitude  | real estate                    |  0.538083  |    48.09 |
-| housing             | for free                       | -0.642826  |    31.73 |
-| housing             | own                            |  0.218292  |    42.05 |
-| housing             | rent                           | -0.387968  |    34.78 |
-| age                 | (-inf, 27.0]                   | -0.398229  |    29.56 |
-| age                 | (27.0, 33.0]                   | -0.11626   |    36.55 |
-| age                 | (33.0, 42.0]                   |  0.224513  |    45    |
-| age                 | (42.0, inf]                    |  0.442777  |    50.41 |
-| employment          | 1<=X<4                         | -0.0303906 |    39.15 |
-| employment          | 4<=X<7                         |  0.0954351 |    40.33 |
-| employment          | <1                             | -0.393538  |    35.74 |
-| employment          | >=7                            |  0.356298  |    42.77 |
-| employment          | unemployed                     | -0.295845  |    36.66 |
-| personal_status     | female div/dep/mar             | -0.280286  |    34.82 |
-| personal_status     | male div/sep                   | -0.232332  |    35.61 |
-| personal_status     | male mar/wid                   |  0.0703104 |    40.59 |
-| personal_status     | male single                    |  0.179303  |    42.38 |
-| foreign_worker      | no                             |  1.09454   |    65.7  |
-| foreign_worker      | yes                            | -0.0342722 |    38.61 |
-| other_payment_plans | bank                           | -0.399386  |    32.68 |
-| other_payment_plans | none                           |  0.0911966 |    40.97 |
-| other_payment_plans | stores                         | -0.340546  |    33.68 |
+| checking_status     | 0<=X<200                       | -0.389053  |    30.83 |
+| checking_status     | <0                             | -0.788869  |    22.06 |
+| checking_status     | >=200                          |  0.504014  |    50.42 |
+| checking_status     | no checking                    |  1.07118   |    62.86 |
+| credit_history      | all paid                       | -1.0905    |    18.72 |
+| credit_history      | critical/other existing credit |  0.86754   |    55.78 |
+| credit_history      | delayed previously             |  0.105666  |    41.36 |
+| credit_history      | existing paid                  | -0.160963  |    36.32 |
+| credit_history      | no credits/all paid            | -1.41373   |    12.6  |
+| purpose             | business                       | -0.384106  |    29.72 |
+| purpose             | domestic appliance             | -0.448645  |    28.11 |
+| purpose             | education                      | -0.85411   |    17.93 |
+| purpose             | furniture/equipment            |  0.0801993 |    41.37 |
+| purpose             | new car                        | -0.43383   |    28.48 |
+| purpose             | other                          | -0.85411   |    17.93 |
+| purpose             | radio/tv                       |  0.513722  |    52.25 |
+| purpose             | repairs                        |  0.0213588 |    39.9  |
+| purpose             | retraining                     |  0.937649  |    62.89 |
+| purpose             | used car                       |  0.675285  |    56.31 |
+| savings_status      | 100<=X<500                     | -0.182016  |    36.27 |
+| savings_status      | 500<=X<1000                    |  0.888859  |    54.48 |
+| savings_status      | <100                           | -0.231914  |    35.42 |
+| savings_status      | >=1000                         |  1.19358   |    59.66 |
+| savings_status      | no known savings               |  0.428806  |    46.65 |
+| credit_amount       | (-inf, 1381.75]                | -0.126477  |    36.48 |
+| credit_amount       | (1381.75, 2332.0]              |  0.394983  |    48.36 |
+| credit_amount       | (2332.0, 4226.0]               |  0.394983  |    48.36 |
+| credit_amount       | (4226.0, inf]                  | -0.543054  |    26.99 |
+| duration            | (-inf, 12.0]                   |  0.366392  |    44.29 |
+| duration            | (12.0, 18.0]                   |  0.147339  |    41.34 |
+| duration            | (18.0, 24.0]                   |  0.101402  |    40.73 |
+| duration            | (24.0, inf]                    | -0.625575  |    30.95 |
+| property_magnitude  | car                            | -0.0431797 |    38.68 |
+| property_magnitude  | life insurance                 | -0.047634  |    38.6  |
+| property_magnitude  | no known property              | -0.647773  |    29.06 |
+| property_magnitude  | real estate                    |  0.544923  |    48.03 |
+| housing             | for free                       | -0.642801  |    31.68 |
+| housing             | own                            |  0.218116  |    41.97 |
+| housing             | rent                           | -0.386769  |    34.74 |
+| age                 | (-inf, 27.0]                   | -0.398634  |    29.58 |
+| age                 | (27.0, 33.0]                   | -0.114006  |    36.57 |
+| age                 | (33.0, 42.0]                   |  0.229235  |    44.99 |
+| age                 | (42.0, inf]                    |  0.450354  |    50.41 |
+| employment          | 1<=X<4                         | -0.0291934 |    39.09 |
+| employment          | 4<=X<7                         |  0.101402  |    40.33 |
+| employment          | <1                             | -0.392292  |    35.64 |
+| employment          | >=7                            |  0.362285  |    42.8  |
+| employment          | unemployed                     | -0.286126  |    36.64 |
+| personal_status     | female div/dep/mar             | -0.280309  |    34.93 |
+| personal_status     | male div/sep                   | -0.212256  |    36    |
+| personal_status     | male mar/wid                   |  0.0841597 |    40.69 |
+| personal_status     | male single                    |  0.179744  |    42.21 |
+| foreign_worker      | no                             |  1.22533   |    67.52 |
+| foreign_worker      | yes                            | -0.0356568 |    38.54 |
+| other_payment_plans | bank                           | -0.397351  |    32.74 |
+| other_payment_plans | none                           |  0.0903517 |    40.87 |
+| other_payment_plans | stores                         | -0.323482  |    33.97 |
 
 ### Scorecard Points Heatmap
 

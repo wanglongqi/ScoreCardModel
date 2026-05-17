@@ -1,4 +1,5 @@
 
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -124,6 +125,12 @@ class WOETransformer(BaseEstimator, TransformerMixin):
                              bin_total=bin_total, n_total=float(len(y)))
             else:
                 woe = woe_fn(good_arr, bad_arr, good_total=total_good, bad_total=total_bad)
+
+            # Cap extreme WOE values: inf/-inf arise when a bin has zero good or zero bad counts
+            # Replace +inf with +20 (very good bin), -inf with -20 (very bad bin), nan with 0
+            woe = np.where(np.isposinf(woe), 20.0, woe)
+            woe = np.where(np.isneginf(woe), -20.0, woe)
+            woe = np.where(np.isnan(woe), 0.0, woe)
 
             dist_good = good_arr / total_good if total_good > 0 else good_arr
             dist_bad = bad_arr / total_bad if total_bad > 0 else bad_arr

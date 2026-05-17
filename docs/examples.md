@@ -278,3 +278,43 @@ KS: 0.368
 ```
 
 [View Report](examples/give_me_some_credit_report.md)
+
+## WOE Method Comparison
+
+The library provides **5 WOE methods**. Each transforms bin counts into Weight of Evidence differently. The table below compares their performance on the Breast Cancer dataset:
+
+```
+## WOE Method Comparison (5 bins)
+
+| Method          |     KS |    AUC |   Total IV |
+|:----------------|-------:|-------:|-----------:|
+| standard        | 0.9841 | 0.9975 |    52.5544 |
+| adjusted        | 0.9683 | 0.9974 |   115.201  |
+| empirical_logit | 0.9841 | 0.999  |    67.7484 |
+| signed          | 0.9841 | 0.9975 |    52.5544 |
+| weighted        | 0.9497 | 0.9979 |    10.5295 |
+```
+
+Key observations:
+- **standard** — raw ln(dist_good/dist_bad). Highest discriminatory power but can produce ±inf for zero-count bins (handled internally by replacing with 0).
+- **adjusted** — default method. Laplace smoothing (1e-6) prevents log(0) with negligible bias. **Recommended for most use cases.**
+- **empirical_logit** — Agresti correction (+0.5). Standard in SAS-based scorecard development. Robust for small bin counts.
+- **signed** — symmetric around zero using ln(max/min). Useful when direction matters more than magnitude.
+- **weighted** — downweights small bins by population share. Produces lower total IV but can be more stable with uneven bin sizes.
+
+All 5 methods converge on similar KS/AUC when bins are well-populated. Differences emerge with sparse data, extreme class imbalance, or very small bin counts.
+
+```python
+# Try different WOE methods
+for method in ['standard', 'adjusted', 'empirical_logit', 'signed', 'weighted']:
+    pipeline = Pipeline([
+        ('binning', BinningTransformer(n_bins=5)),
+        ('woe', WOETransformer(method=method)),
+        ('model', LogisticRegression(C=1.0)),
+    ])
+    pipeline.fit(X_train, y_train)
+    y_prob = pipeline.predict_proba(X_test)[:, 1]
+    print(f"{method:16s} KS={calculate_ks(y_test, y_prob):.4f}")
+```
+
+[View WOE In-Depth Guide](woe_in_depth.md) | [Run Comparison Script](../compare_woe_methods.py)

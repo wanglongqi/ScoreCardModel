@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This report evaluates a credit scorecard model built on 9 features using Logistic Regression with WOE transformation. The model achieves a KS statistic of **39.8%** and an AUC of **0.756** (Accuracy Ratio = 0.513), indicating reasonable discriminatory power between good and bad accounts.
+This report evaluates a credit scorecard model built on 9 features using Logistic Regression with **empirical_logit** WOE transformation. The model achieves a KS statistic of **39.8%** and an AUC of **0.756** (Accuracy Ratio = 0.513), indicating reasonable discriminatory power between good and bad accounts.
 
 **KS = 39.8%** — the maximum separation between cumulative good and bad distributions. This is considered moderate (acceptable) for credit scorecards.
 
@@ -48,13 +48,19 @@ The model uses 9 features with a total IV of **2.11**. The chart below ranks fea
 
 ### Top Features by IV
 
-| Feature   |     IV | Monotonicity   | Recommendation   |
-|:----------|-------:|:---------------|:-----------------|
-| PAY_0     | 0.8816 | decreasing     | Investigate      |
-| PAY_3     | 0.4354 | non-monotonic  | Accept           |
-| LIMIT_BAL | 0.1609 | non-monotonic  | Accept           |
-| PAY_AMT1  | 0.1602 | non-monotonic  | Accept           |
-| PAY_AMT2  | 0.1405 | non-monotonic  | Accept           |
+The table below ranks the top 10 features. Note the **Trend Advice**: features with 'Strong Trend (Minor Violations)' are highly predictive but have minor non-monotonic bins. In many practical cases, keeping these features provides significant performance gains compared to enforcing strict monotonicity.
+
+| Feature   |     IV | Monotonicity   | Trend_Advice                    | Recommendation          |
+|:----------|-------:|:---------------|:--------------------------------|:------------------------|
+| PAY_0     | 0.8816 | decreasing     | Good                            | Investigate             |
+| PAY_3     | 0.4354 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| LIMIT_BAL | 0.1609 | non-monotonic  | Irregular                       | Review (Unstable Trend) |
+| PAY_AMT1  | 0.1602 | non-monotonic  | Strong Trend (Minor Violations) | Accept (Review Trend)   |
+| PAY_AMT2  | 0.1405 | non-monotonic  | Strong Trend (Minor Violations) | Accept (Review Trend)   |
+| PAY_AMT3  | 0.0966 | increasing     | Good                            | Accept                  |
+| PAY_AMT6  | 0.0883 | increasing     | Good                            | Accept                  |
+| PAY_AMT4  | 0.0817 | increasing     | Good                            | Accept                  |
+| PAY_AMT5  | 0.0694 | increasing     | Good                            | Accept                  |
 
 ## Scorecard
 
