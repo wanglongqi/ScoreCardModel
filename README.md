@@ -1,23 +1,28 @@
 # ScoreCardModel
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-98%20passed-brightgreen.svg)]()
+<p align="center">
+  <img src="docs/images/scorecard_heatmap.png" width="800" alt="ScoreCardModel Banner">
+</p>
 
-**A professional toolset for scorecard modeling, fully compatible with scikit-learn.** Designed for credit risk analysts and data scientists who need transparent, regulator-friendly scoring models.
+<p align="center">
+    <a href="https://pypi.org/project/scorecard-toolkit/"><img src="https://img.shields.io/pypi/v/scorecard-toolkit?color=blue" alt="PyPI version"></a>
+    <a href="https://scorecardmodel.readthedocs.io/"><img src="https://img.shields.io/readthedocs/scorecardmodel?color=green" alt="Documentation Status"></a>
+    <a href="https://github.com/wanglongqi/ScoreCardModel/blob/master/LICENSE"><img src="https://img.shields.io/github/license/wanglongqi/ScoreCardModel?color=yellow" alt="License"></a>
+    <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+</p>
 
-## Features
+**ScoreCardModel** is a professional and modern toolset for scorecard modeling, fully compatible with **scikit-learn**. It is designed for credit risk analysts and data scientists who need to build transparent, regulator-friendly scoring models with ease.
 
-- **Scikit-learn API —** `BinningTransformer`, `WOETransformer`, and `ScoreCardTransformer` work in any `Pipeline` or `GridSearchCV`
-- **5 WOE Methods —** Standard, Adjusted (Laplace), Empirical Logit, Signed, Weighted
-- **Advanced Binning —** Quantile, Uniform, Optimal (via `optbinning`), Tree-based
-- **Analyst Facade —** `ScoreCardWrapper` for familiar analyst workflows
-- **16+ Plot Types —** KS, ROC, CAP, Gain/Lift, Calibration, PSI Drift, WOE Pattern, IV Ranking, Scorecard Heatmap, Cutoff Optimization, and more
-- **Automated HTML Report —** One-line `generate_report()` produces a multi-page professional report
-- **Feature Selection —** IV-based filtering, correlation deduplication, ranked diagnostics
-- **Model Templates —** `BaseScorecard` / `ConservativeScorecard` for quick starts
+## 🚀 Key Features
 
-## Visual Gallery
+- 🛠 **Scikit-Learn Compatible**: `BinningTransformer`, `WOETransformer`, and `ScoreCardTransformer` work in any `Pipeline` or `GridSearchCV`.
+- 📊 **Rich Analytics**: 18+ plot types (KS, ROC, CAP, Lift, Calibration, PSI, etc.) for comprehensive model evaluation.
+- 📝 **Automated Reporting**: Generate professional Markdown or Excel reports with one function call.
+- 🔄 **5 WOE Methods**: Standard, Adjusted (Laplace), Empirical Logit, Signed, and Weighted Weight of Evidence.
+- 🎮 **Interactive Dashboard**: A Jupyter-based what-if widget for real-time scorecard testing.
+- 🏢 **Industry Standard**: Built-in support for PDO (Points to Double Odds) and Base-Odds scaling.
+
+## 📸 Visual Gallery
 
 | KS Curve | ROC Curve | CAP Curve |
 |---|---|---|
@@ -27,39 +32,43 @@
 |---|---|---|
 | ![Score Dist](docs/images/score_distribution.png) | ![Waterfall](docs/images/scorecard_waterfall.png) | ![IV](docs/images/iv_summary.png) |
 
-[See all 12+ visualizations →](docs/examples.md#visualizations)
+[See all 12+ visualizations →](https://scorecardmodel.readthedocs.io/en/latest/examples/#visualizations)
 
-## Installation
+## 📦 Installation
 
 ```bash
 pip install scorecard-toolkit
 ```
 
-## Quick Start
+## ⚡ Quick Start
 
 ```python
 from ScoreCardModel import ScoreCardWrapper
 
+# Initialize and fit
 sc = ScoreCardWrapper(binning_strategy='quantile', base_points=600, pdo=20)
 sc.fit(X_train, y_train)
 
+# Predict scores and export scorecard
 scores = sc.predict(X_test)
 card = sc.export_scorecard()
 print(card.head(10))
 ```
 
-## Documentation
+## 📚 Documentation
 
-| Guide | Description |
-|---|---|
-| [Installation](docs/installation.md) | pip, uv, dev setup |
-| [Quickstart](docs/quickstart.md) | 5 ways to use the package |
-| [Full Examples](docs/examples.md) | Code + real output + plots |
-| [Visualizations](docs/examples.md#visualizations) | KS, ROC, CAP, heatmaps, and more |
-| [WOE Guide](docs/woe_in_depth.md) | WOE methods, diagnostics, IV |
-| [Best Practices](docs/best_practices.md) | Regulatory scorecard guidelines |
-| [API Reference](docs/api.md) | Class and function reference |
+Visit [scorecardmodel.readthedocs.io](https://scorecardmodel.readthedocs.io/) for the full documentation, including:
 
-## License
+- [Installation Guide](https://scorecardmodel.readthedocs.io/en/latest/installation/)
+- [Quickstart Guide](https://scorecardmodel.readthedocs.io/en/latest/quickstart/)
+- [Full Examples & Visualizations](https://scorecardmodel.readthedocs.io/en/latest/examples/)
+- [WOE In-Depth Guide](https://scorecardmodel.readthedocs.io/en/latest/woe_in_depth/)
+- [API Reference](https://scorecardmodel.readthedocs.io/en/latest/api/)
 
-MIT
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
