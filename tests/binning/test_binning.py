@@ -26,11 +26,11 @@ def test_categorical_passthrough():
     assert pd.api.types.is_string_dtype(X_bin['color'])
 
 
-def test_nan_raises():
+def test_nan_handled():
     X = pd.DataFrame({'age': [20, 30, np.nan, 40]})
     bt = BinningTransformer()
-    with pytest.raises(ValueError, match='NaN'):
-        bt.fit(X)
+    X_bin = bt.fit_transform(X)
+    assert 'Missing' in X_bin['age'].unique()
 
 
 def test_invalid_strategy_raises():

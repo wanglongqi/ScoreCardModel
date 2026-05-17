@@ -1,4 +1,6 @@
 import os
+from typing import Optional
+
 import matplotlib
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -18,7 +20,53 @@ from ScoreCardModel.analytics.plotting import (
     plot_score_distribution,
     plot_scorecard_heatmap,
 )
-from ScoreCardModel.analytics.selection import rank_features
+from ScoreCardModel.analytics.selection import calculate_psi_report, rank_features
+from ScoreCardModel.weight_of_evidence.diagnostics import bin_statistics
+
+
+def export_to_excel(
+    pipeline: Pipeline,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_test: Optional[pd.DataFrame] = None,
+    y_test: Optional[pd.Series] = None,
+    output_path: str = "scorecard_specification.xlsx",
+) -> str:
+    """Export a professional multi-sheet Excel specification for the model."""
+    bt = pipeline.named_steps['binning']
+    wt = pipeline.named_steps['woe']
+    lr = pipeline.named_steps['model']
+
+    from ScoreCardModel.score_card.transformers import ScoreCardTransformer
+    sct = ScoreCardTransformer(lr, bt, wt)
+    card = sct.export_scorecard()
+
+    # 1. Feature Summary
+    summary = rank_features(X_train, y_train, n_bins=bt.n_bins)
+    if X_test is not None:
+        psi_df = calculate_psi_report(X_train, X_test, n_bins=bt.n_bins)
+        summary = summary.merge(psi_df[['Feature', 'PSI', 'Status']], on='Feature', how='left')
+
+    # 2. Detailed Bin Stats
+    bin_details = []
+    X_bin = bt.transform(X_train)
+    for col in X_train.columns:
+        stats = bin_statistics(X_bin[col], y_train)
+        stats.insert(0, 'Feature', col)
+        bin_details.append(stats)
+    full_bin_stats = pd.concat(bin_details, ignore_index=True)
+
+    # Write to Excel
+    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+        card.to_sheet = writer # type: ignore
+        card.to_excel(writer, sheet_name='Scorecard', index=False)
+        summary.to_excel(writer, sheet_name='Feature Summary', index=False)
+        full_bin_stats.to_excel(writer, sheet_name='Bin Details', index=False)
+
+        # Basic formatting could be added here using openpyxl objects if needed
+        # but for now, raw export is a great start.
+
+    return output_path
 
 
 def generate_report(
@@ -54,6 +102,7 @@ def generate_report(
     fpr, tpr, _ = roc_curve(y_test, y_prob_test)
     accuracy_ratio = 2 * auc - 1
 
+    sct = None
     try:
         lr = pipeline.named_steps.get('model')
         bt = pipeline.named_steps.get('binning')
@@ -64,8 +113,9 @@ def generate_report(
             scores = sct.transform(X_test)
         else:
             scores = pd.Series(y_prob_test, index=X_test.index)
-    except Exception:
+    except Exception as e:
         scores = pd.Series(y_prob_test, index=X_test.index)
+        # scores assignment fallback is enough, sct remains None if failed
 
     n_features = 0
     bt = pipeline.named_steps.get('binning')
@@ -163,8 +213,15 @@ def generate_report(
 
         try:
             ranking = rank_features(X_train, y_train, n_bins=bt.n_bins if bt else 5)
-            top5 = ranking.head(5)[['Feature', 'IV', 'Monotonicity', 'Recommendation']]
+            top5 = ranking.head(10)[['Feature', 'IV', 'Monotonicity', 'Trend_Advice', 'Recommendation']]
             lines.append("### Top Features by IV")
+            lines.append("")
+            lines.append(
+                "The table below ranks the top 10 features. Note the **Trend Advice**: features with "
+                "'Strong Trend (Minor Violations)' are highly predictive but have minor non-monotonic bins. "
+                "In many practical cases, keeping these features provides significant performance gains "
+                "compared to enforcing strict monotonicity."
+            )
             lines.append("")
             lines.append(top5.to_markdown(index=False))
             lines.append("")
@@ -182,27 +239,31 @@ def generate_report(
     )
     lines.append("")
 
-    try:
-        card = sct.export_scorecard()
-        n_rows = len(card)
-        lines.append(f"The table below shows the full scorecard ({n_rows} rows across {n_features} features).")
-        lines.append("")
-        lines.append(card.to_markdown(index=False))
-        lines.append("")
-        fig = plot_scorecard_heatmap(card)
-        rel = save_plot(fig, "scorecard_points_heatmap.png")
-        lines.append("### Scorecard Points Heatmap")
-        lines.append("")
-        lines.append(
-            "The heatmap provides a bird's-eye view of the scorecard. Green cells = higher points (lower risk), "
-            "red cells = lower points (higher risk). Consistent color gradients within each feature indicate "
-            "good monotonicity."
-        )
-        lines.append("")
-        lines.append(f"![Scorecard Points Heatmap]({rel})")
-        lines.append("")
-    except Exception:
-        lines.append("Scorecard export failed.")
+    if sct is not None:
+        try:
+            card = sct.export_scorecard()
+            n_rows = len(card)
+            lines.append(f"The table below shows the full scorecard ({n_rows} rows across {n_features} features).")
+            lines.append("")
+            lines.append(card.to_markdown(index=False))
+            lines.append("")
+            fig = plot_scorecard_heatmap(card)
+            rel = save_plot(fig, "scorecard_points_heatmap.png")
+            lines.append("### Scorecard Points Heatmap")
+            lines.append("")
+            lines.append(
+                "The heatmap provides a bird's-eye view of the scorecard. Green cells = higher points (lower risk), "
+                "red cells = lower points (higher risk). Consistent color gradients within each feature indicate "
+                "good monotonicity."
+            )
+            lines.append("")
+            lines.append(f"![Scorecard Points Heatmap]({rel})")
+            lines.append("")
+        except Exception as e:
+            lines.append(f"Scorecard export failed: {e}")
+            lines.append("")
+    else:
+        lines.append("Scorecard could not be generated (pipeline missing necessary steps).")
         lines.append("")
 
     # ── Calibration & Cutoff ──

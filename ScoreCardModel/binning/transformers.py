@@ -49,11 +49,7 @@ class BinningTransformer(BaseEstimator, TransformerMixin):
             if var not in x.columns:
                 continue
 
-            if x[var].isna().any():
-                raise ValueError(
-                    f"Column '{var}' contains NaN values. "
-                    f"Impute missing values before fitting BinningTransformer."
-                )
+            valid_x = x[var].dropna()
 
             if not pd.api.types.is_numeric_dtype(x[var]):
                 self.fitted_bins_[var] = 'categorical'
@@ -76,16 +72,17 @@ class BinningTransformer(BaseEstimator, TransformerMixin):
             elif self.strategy == 'tree':
                 if y is None:
                     raise ValueError("Target 'y' is required for 'tree' binning strategy.")
+                x_tree = x[[var]].fillna(x[var].median())
                 tree = DecisionTreeClassifier(max_leaf_nodes=self.n_bins, random_state=42)
-                tree.fit(x[[var]], y)
+                tree.fit(x_tree, y)
                 thresholds = sorted(tree.tree_.threshold[tree.tree_.threshold != -2])
                 self.fitted_bins_[var] = thresholds
             elif self.strategy == 'quantile':
-                _, bins = pd.qcut(x[var], q=self.n_bins, retbins=True, duplicates='drop')
+                _, bins = pd.qcut(valid_x, q=self.n_bins, retbins=True, duplicates='drop')
                 internal = bins[1:-1]
                 self.fitted_bins_[var] = list(internal) if len(internal) > 0 else []
             elif self.strategy == 'uniform':
-                _, bins = pd.cut(x[var], bins=self.n_bins, retbins=True)
+                _, bins = pd.cut(valid_x, bins=self.n_bins, retbins=True)
                 internal = bins[1:-1]
                 self.fitted_bins_[var] = list(internal) if len(internal) > 0 else []
             else:
@@ -101,13 +98,20 @@ class BinningTransformer(BaseEstimator, TransformerMixin):
         for var, state in self.fitted_bins_.items():
             if var not in x_out.columns:
                 continue
+
+            has_nan = x_out[var].isna().any()
+
             if isinstance(state, str) and state == 'categorical':
                 x_out[var] = x_out[var].astype(str)
+                if has_nan:
+                    x_out[var] = x_out[var].fillna('Missing')
             else:
                 if len(state) == 0:
                     x_out[var] = 'ALL'
                 else:
                     bins = [-np.inf] + list(state) + [np.inf]
                     x_out[var] = pd.cut(x_out[var], bins=bins).astype(str)
+                    if has_nan:
+                        x_out[var] = x_out[var].fillna('Missing')
 
         return x_out

@@ -69,13 +69,22 @@ class ScoreCardTransformer(BaseEstimator, TransformerMixin):
         rows = []
         coefs = self.model.coef_[0]
         intercept = self.model.intercept_[0]
-        features = list(self.woe_transformer.woe_maps_.keys())
         
+        # Get feature names from model if possible, else from woe_transformer
+        if hasattr(self.model, "feature_names_in_"):
+            features = list(self.model.feature_names_in_)
+        else:
+            features = list(self.woe_transformer.woe_maps_.keys())
+            
         # Base points distribution
         # intercept is distributed across features for the table
         intercept_share = intercept / len(features)
         
         for i, feat in enumerate(features):
+            if feat not in self.woe_transformer.woe_maps_:
+                # This should not happen if everything is aligned
+                continue
+                
             woe_map = self.woe_transformer.woe_maps_[feat]
             coef = coefs[i]
             for bin_name, woe in woe_map.items():

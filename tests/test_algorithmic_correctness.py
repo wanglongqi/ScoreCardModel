@@ -267,12 +267,12 @@ class TestBinningCorrectness:
                 splits = bt.fitted_bins_['x']
                 assert all(splits[i] <= splits[i+1] for i in range(len(splits)-1))
 
-    def test_binning_nan_rejected(self):
-        """NaN values in numeric columns raise ValueError."""
+    def test_binning_nan_accepted(self):
+        """NaN values in numeric columns are accepted and mapped to 'Missing'."""
         X = pd.DataFrame({'x': [1.0, 2.0, np.nan]})
         bt = BinningTransformer()
-        with pytest.raises(ValueError, match="NaN"):
-            bt.fit(X)
+        X_bin = bt.fit_transform(X)
+        assert 'Missing' in X_bin['x'].unique()
 
 
 # =============================================================================

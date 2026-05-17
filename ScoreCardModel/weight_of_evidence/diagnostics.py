@@ -78,16 +78,47 @@ def midpoint_correlation(
 ) -> float:
     """Spearman correlation between bin midpoints and WOE values.
 
-    High absolute correlation (> 0.9) suggests good linearity between
-    the feature value and log-odds.
+    Handles -inf/inf boundaries by extrapolating based on split range.
     """
     if len(bin_edges) < 3 or len(woe_values) < 3:
         return 0.0
 
-    midpoints = [(bin_edges[i] + bin_edges[i + 1]) / 2 for i in range(len(bin_edges) - 1)]
+    splits = [e for e in bin_edges if np.isfinite(e)]
+    if len(splits) < 1:
+        return 0.0
+
+    if len(splits) >= 2:
+        avg_diff = np.mean(np.diff(splits))
+    else:
+        avg_diff = 1.0
+
+    processed_edges = []
+    for i, e in enumerate(bin_edges):
+        if np.isneginf(e):
+            processed_edges.append(splits[0] - avg_diff)
+        elif np.isposinf(e):
+            processed_edges.append(splits[-1] + avg_diff)
+        else:
+            processed_edges.append(e)
+
+    midpoints = [(processed_edges[i] + processed_edges[i + 1]) / 2
+                 for i in range(len(processed_edges) - 1)]
     n = min(len(midpoints), len(woe_values))
     corr, _ = spearmanr(midpoints[:n], woe_values[:n])
     return float(corr) if not np.isnan(corr) else 0.0
+
+
+def calculate_feature_psi(
+    expected_bins: pd.Series,
+    actual_bins: pd.Series,
+) -> float:
+    """Calculate PSI between two binned versions of the same feature."""
+    from ScoreCardModel.analytics.metrics import calculate_distribution_psi
+
+    all_cats = sorted(set(expected_bins.unique()) | set(actual_bins.unique()))
+    expected_dist = expected_bins.value_counts(normalize=True).reindex(all_cats, fill_value=0.0)
+    actual_dist = actual_bins.value_counts(normalize=True).reindex(all_cats, fill_value=0.0)
+    return calculate_distribution_psi(expected_dist.values, actual_dist.values)
 
 
 def bin_statistics(

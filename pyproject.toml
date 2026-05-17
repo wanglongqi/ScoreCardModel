@@ -36,6 +36,7 @@ dependencies = [
     "optbinning",
     "matplotlib",
     "seaborn",
+    "openpyxl",
 ]
 
 [project.urls]

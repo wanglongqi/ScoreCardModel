@@ -16,22 +16,26 @@ def plot_ks(y_true: np.ndarray, y_prob: np.ndarray, title: str = "KS Curve") -> 
     ks_idx = np.argmax(tpr - fpr)
     ks_stat = tpr[ks_idx] - fpr[ks_idx]
 
-    x = np.linspace(0, 1, len(tpr))
+    # Calculate population proportion at each threshold
+    n_good = np.sum(y_true)
+    n_bad = len(y_true) - n_good
+    pop_pct = (tpr * n_good + fpr * n_bad) / (n_good + n_bad)
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(x, tpr, label='Good (Cumulative)', color='blue', lw=2)
-    ax.plot(x, fpr, label='Bad (Cumulative)', color='red', lw=2)
+    ax.plot(pop_pct, tpr, label='Good (Cumulative)', color='blue', lw=2)
+    ax.plot(pop_pct, fpr, label='Bad (Cumulative)', color='red', lw=2)
     diff = tpr - fpr
-    ax.plot(x, diff, label='KS Difference', color='green', lw=2, linestyle='--')
-    ax.axvline(x[ks_idx], color='black', linestyle=':', alpha=0.5)
-    ax.annotate(f'KS = {ks_stat:.3f}', xy=(x[ks_idx], ks_stat),
+    ax.plot(pop_pct, diff, label='KS Difference', color='green', lw=2, linestyle='--')
+    ax.axvline(pop_pct[ks_idx], color='black', linestyle=':', alpha=0.5)
+    ax.annotate(f'KS = {ks_stat:.3f}', xy=(pop_pct[ks_idx], ks_stat),
                 fontsize=12, fontweight='bold',
-                xytext=(x[ks_idx] + 0.05, ks_stat + 0.05),
+                xytext=(pop_pct[ks_idx] + 0.05, ks_stat + 0.05),
                 arrowprops={"arrowstyle": '->', "color": 'black'})
 
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    ax.set_xlabel('Population Percentile')
+    ax.set_xlabel('Population Proportion (Ranked by Score)')
+    ax.set_ylabel('Cumulative Proportion')
     ax.set_title(title)
     ax.legend(loc='lower right')
     ax.grid(True, alpha=0.3)
@@ -387,8 +391,13 @@ def plot_scorecard_heatmap(scorecard_df: pd.DataFrame) -> plt.Figure:
         ax.text(0.5, 0.5, 'Empty scorecard', ha='center', va='center')
         return fig
 
-    pivot = scorecard_df.pivot_table(
-        index='Variable', columns='Bin', values='Points', aggfunc='first'
+    # Ensure bins are ordered as they appear in the scorecard to avoid lexicographical sort
+    df = scorecard_df.copy()
+    unique_bins = df['Bin'].unique()
+    df['Bin'] = pd.Categorical(df['Bin'], categories=unique_bins, ordered=True)
+
+    pivot = df.pivot_table(
+        index='Variable', columns='Bin', values='Points', aggfunc='first', observed=False
     )
 
     n_rows, n_cols = pivot.shape

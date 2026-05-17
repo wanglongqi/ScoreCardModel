@@ -20,9 +20,14 @@ def calculate_psi(expected: np.ndarray, actual: np.ndarray, n_bins: int = 10) ->
     expected_per = scale_data(expected, bins)
     actual_per = scale_data(actual, bins)
 
-    # Avoid zero division
-    expected_per = np.where(expected_per == 0, 0.0001, expected_per)
-    actual_per = np.where(actual_per == 0, 0.0001, actual_per)
+    return calculate_distribution_psi(expected_per, actual_per)
+
+def calculate_distribution_psi(expected_per: np.ndarray, actual_per: np.ndarray) -> float:
+    """Calculate PSI between two frequency distributions (percentages)."""
+    # Avoid zero division and log(0)
+    eps = 1e-6
+    expected_per = np.where(expected_per == 0, eps, expected_per)
+    actual_per = np.where(actual_per == 0, eps, actual_per)
 
     psi_val = np.sum((actual_per - expected_per) * np.log(actual_per / expected_per))
     return float(psi_val)

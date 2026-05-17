@@ -50,16 +50,23 @@ class WOETransformer(BaseEstimator, TransformerMixin):
         rare_lumping: bool = False,
         min_bin_pct: float = 0.05,
         rare_level_label: str = 'RARE',
+        unseen_strategy: str = 'zero',
     ):
         if method not in WOE_METHODS:
             raise ValueError(
                 f"Unknown method '{method}'. Valid: {sorted(WOE_METHODS)}"
+            )
+        valid_unseen = {'zero', 'mean', 'min', 'raise'}
+        if unseen_strategy not in valid_unseen:
+            raise ValueError(
+                f"Unknown unseen_strategy '{unseen_strategy}'. Valid: {sorted(valid_unseen)}"
             )
         self.method = method
         self.laplace_smoothing = laplace_smoothing
         self.rare_lumping = rare_lumping
         self.min_bin_pct = min_bin_pct
         self.rare_level_label = rare_level_label
+        self.unseen_strategy = unseen_strategy
 
     @property
     def iv(self) -> dict[str, float]:
@@ -131,6 +138,20 @@ class WOETransformer(BaseEstimator, TransformerMixin):
         x_out = x.copy()
 
         for col, woe_map in self.woe_maps_.items():
-            x_out[col] = x_out[col].map(woe_map).fillna(0.0)
+            if col not in x_out.columns:
+                continue
+
+            unseen = set(x_out[col].unique()) - set(woe_map.keys())
+            if unseen and self.unseen_strategy == 'raise':
+                raise ValueError(f"Feature '{col}' contains unseen bins: {unseen}")
+
+            fill_val = 0.0
+            if unseen:
+                if self.unseen_strategy == 'mean':
+                    fill_val = float(np.mean(list(woe_map.values())))
+                elif self.unseen_strategy == 'min':
+                    fill_val = float(np.min(list(woe_map.values())))
+
+            x_out[col] = x_out[col].map(woe_map).fillna(fill_val)
 
         return x_out

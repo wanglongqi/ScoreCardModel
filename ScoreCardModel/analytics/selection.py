@@ -4,10 +4,40 @@ import pandas as pd
 
 from ScoreCardModel.binning.transformers import BinningTransformer
 from ScoreCardModel.weight_of_evidence.diagnostics import (
+    calculate_feature_psi,
     check_monotonicity,
     woe_chi_square,
 )
 from ScoreCardModel.weight_of_evidence.transformers import WOETransformer
+
+
+def calculate_psi_report(
+    X_expected: pd.DataFrame,
+    X_actual: pd.DataFrame,
+    n_bins: int = 5,
+) -> pd.DataFrame:
+    """Calculate PSI for all features in a DataFrame."""
+    bt = BinningTransformer(n_bins=n_bins)
+    bt.fit(X_expected)
+    X_exp_bin = bt.transform(X_expected)
+    X_act_bin = bt.transform(X_actual)
+
+    rows = []
+    for col in X_expected.columns:
+        if col not in X_actual.columns:
+            continue
+        psi = calculate_feature_psi(X_exp_bin[col], X_act_bin[col])
+
+        if psi < 0.1:
+            label = 'stable'
+        elif psi < 0.25:
+            label = 'warning'
+        else:
+            label = 'unstable'
+
+        rows.append({'Feature': col, 'PSI': round(psi, 4), 'Status': label})
+
+    return pd.DataFrame(rows).sort_values('PSI', ascending=False).reset_index(drop=True)
 
 
 def select_by_iv(
@@ -90,12 +120,24 @@ def rank_features(
             label = 'suspicious'
             rec = 'Investigate'
 
+        if mono == 'non-monotonic' and strength >= 0.7:
+            trend_advice = 'Strong Trend (Minor Violations)'
+            if rec == 'Accept':
+                rec = 'Accept (Review Trend)'
+        elif mono == 'non-monotonic':
+            trend_advice = 'Irregular'
+            if rec in ['Accept', 'Investigate']:
+                rec = 'Review (Unstable Trend)'
+        else:
+            trend_advice = 'Good'
+
         rows.append({
             'Feature': feat,
             'IV': round(iv, 4),
             'IV_Label': label,
             'Monotonicity': mono,
             'Mono_Strength': round(strength, 3),
+            'Trend_Advice': trend_advice,
             'Chi2_pvalue': round(pval, 4),
             'Recommendation': rec,
         })

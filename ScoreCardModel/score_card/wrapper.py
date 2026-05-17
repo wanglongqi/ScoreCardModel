@@ -23,19 +23,24 @@ class ScoreCardWrapper:
         n_bins: int = 5,
         base_points: float = 600,
         base_odds: float = 50,
-        pdo: float = 20
+        pdo: float = 20,
+        model_params: Optional[dict] = None
     ):
         self.binning_strategy = binning_strategy
         self.n_bins = n_bins
         self.base_points = base_points
         self.base_odds = base_odds
         self.pdo = pdo
-        
+
+        params = {}
+        if model_params:
+            params.update(model_params)
+
         # Build the internal pipeline
         self.pipeline = Pipeline([
             ('binning', BinningTransformer(strategy=binning_strategy, n_bins=n_bins)),
             ('woe', WOETransformer()),
-            ('model', LogisticRegression())
+            ('model', LogisticRegression(**params))
         ])
         self.scorecard_transformer_: Optional[ScoreCardTransformer] = None
 
@@ -71,3 +76,11 @@ class ScoreCardWrapper:
         if self.scorecard_transformer_ is None:
             raise ValueError("ScoreCardWrapper must be fitted before exporting.")
         return self.scorecard_transformer_.export_scorecard()
+
+    def export_to_excel(self, x_train: pd.DataFrame, y_train: pd.Series,
+                        x_test: Optional[pd.DataFrame] = None,
+                        y_test: Optional[pd.Series] = None,
+                        output_path: str = "scorecard_specification.xlsx") -> str:
+        """Export a professional multi-sheet Excel specification."""
+        from ScoreCardModel.analytics.reporting import export_to_excel
+        return export_to_excel(self.pipeline, x_train, y_train, x_test, y_test, output_path)
